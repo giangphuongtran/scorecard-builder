@@ -1,16 +1,15 @@
 %let project_dir=\\10.200.43.8\Sandisk\credit-scoring;
 
-/*libname raw "&project_dir\data\raw" compress=yes;*/
-libname inlib "&project_dir\data\raw\inlib" compress=yes;
+libname raw "&project_dir\data\raw\inlib" compress=yes;
 libname abt "&project_dir\data\work\abt" compress=yes;
 libname models "&project_dir\models" compress=yes;
 libname reports "&project_dir\reports" compress=yes;
 
-%let input_data=inlib.abt_app;
+%let input_data=raw.abt_app;
 %let target_var=default12;
 
 proc contents data=&input_data;
-	title "Step 1: Verify data exists";
+	title "Verify data exists";
 run;
 
 proc sql;
@@ -103,7 +102,7 @@ proc sql;
 		count(1) as n_obs,
 		sum(&target_var=1) as n_bads,
 		sum(&target_var=0) as n_goods,
-		calculated n_bads / n_obs as bad_rate format percent8.2
+		calculated n_bads / count(1) as bad_rate format percent8.2
 	from abt.train
 	union all
 	select
@@ -111,7 +110,7 @@ proc sql;
 		count(1) as n_obs,
 		sum(&target_var=1) as n_bads,
 		sum(&target_var=0) as n_goods,
-		calculated n_bads / n_obs as bad_rate format percent8.2
+		calculated n_bads / count(1) as bad_rate format percent8.2
 	from abt.valid;
 quit;
 
