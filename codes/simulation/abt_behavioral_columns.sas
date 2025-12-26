@@ -12,7 +12,7 @@ run;
 proc sql noprint;
 select period
 into :periods separated by ' '
-from periods order by 1;
+from periods order by 1; /*ascending order*/
 quit;
 %let n_periods = &max_length;
 %put &n_periods;
