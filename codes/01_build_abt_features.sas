@@ -100,7 +100,7 @@ Outputs:
 
 	data work._np_cus_all;
 		set work._np_cus_all work._np_month_prod(rename=(
-			app_installments = installment
+			app_installment = installment
 			app_spendings = spendings
 			app_income = income
 		));
