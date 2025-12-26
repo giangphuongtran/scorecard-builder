@@ -248,7 +248,7 @@ Outputs:
 	%let n_prod_periods = &sqlobs;
 
 	%if &n_prod_periods < 2 %then %do;
-		%put ERROR: Need at least 2 periods in &pot_production to build monthly ABTs (needs prev month).
+		%put ERROR: Need at least 2 periods in &pot_production to build monthly ABTs (needs prev month).;
 		%abort cancel;
 	%end;
 
