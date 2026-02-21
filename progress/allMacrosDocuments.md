@@ -66,32 +66,21 @@
 
 + Create %build_abt_one_month (build application-level abt for one month using info as of the previous month)
 
-Step,What it does,Example output
-1,Take applications for 202402 from pot.Production,_np_month_prod: rows with period=202402
-:---:,:---:,:---:
-2,Distinct customers in that month,"_np_cust_uni: e.g. C001, C002"
-:---:,:---:,:---:
-3,Flag: Had active loan in 202401?,_np_cust_uni_active: cid + act_cus_active=1
-:---:,:---:,:---:
-4,Customer-level features for INS and CSS as of 202401,"_np_cus_ins_hist/agr, _np_cus_css_hist/agr (utilization, CC, seniority, etc.)"
-:---:,:---:,:---:
-5,"All loans in 202402 (history + new apps), add time",_np_cus_all
-:---:,:---:,:---:
-6,Per application: Loan counts and credit capacity at that moment in the month,"_np_cus_nloan: act_call_cc, act_cins_n_loan, act_ccss_n_loan, act_call_n_loan by aid"
-:---:,:---:,:---:
-7,Behavioral window start (e.g. 14 months before 202401),proc_periodf e.g. 202211
-:---:,:---:,:---:
-8,"Long table (cid, period, product, days, due) in window",_np_abt_tmp_cus
-:---:,:---:,:---:
-9,"Max days/due by (cid, period), then transpose to wide (INS, CSS, ALL)",_np_cmaxi/cmaxc/cmaxa_days and _due
-:---:,:---:,:---:
-10,Merge those by cid,"_np_abt_beh (one row per cid, columns like cmaxi_days_202312, …)"
-:---:,:---:,:---:
-11,"Rolling 3/6/9/12‑month Mean/Max/Min + n_arrears, n_arrears_days, n_good_days",_np_abt_beh_fin
-:---:,:---:,:---:
-12,Merge production + per‑app loan/CC by aid,_np_abt_base
-:---:,:---:,:---:
-13,Final Join: Merge base + hist/agr + active flag + behavioral,"&out_abt = e.g. abt.abt_202402 (one row per application, all features)"
+| Step | What it does | Example output |
+| :---: | :---: |:---: |
+| 1 | Take applications for 202402 from pot.Production | _np_month_prod (rows with period = 202402) |
+| 2 | Distinct customers in that month | _np_cust_uni (e.g., C001, C002) |
+| 3 | Flag: had active loan in 202401 | _np_cust_uni_active (cid + act_cus_active = 1) |
+| 4 | Customer-level features for INS and CSS as of 202401 | _np_cus_ins_hist/_agr, _np_cus_css_hist/_agr (utilization, CC, seniority, etc.) |
+| 5 | All loans in 202402 (history + new apps), add time | _np_cus_all |
+| 6 | Per application: loan counts and credit capacity at that moment in month | _np_cus_nloan (act_call_cc, act_cins_n_loan, act_ccss_n_loan, act_call_n_loan by aid) |
+| 7 | Behavioral window start (e.g., 14 months before 202401) | proc_periodf (e.g., 202211) |
+| 8 | Long table (cid, period, product, days, due) in window | _np_abt_tmp_cus |
+| 9 | Max days/due by (cid, period), transpose to wide (INS, CSS, ALL) | _np_cmaxi/_cmaxc/_cmaxa_days and _due |
+| 10 | Merge max tables by cid | _np_abt_beh (one row per cid, e.g., cmaxi_days_202312, …) |
+| 11 | Rolling 3/6/9/12M Mean/Max/Min + n_arrears, n_arrears_days, n_good_days | _np_abt_beh_fin |
+| 12 | Merge production + per-app loan/CC by aid | _np_abt_base |
+| 13 | Final merge: base + INS/CSS hist + active flag + behavioral by cid | &out_abt (e.g., abt.abt_202402, one row per application with all features) |
 
 	+ Ensure pot.Production & pot.transactions exist
 	+ Create hist.transaction if not exists
