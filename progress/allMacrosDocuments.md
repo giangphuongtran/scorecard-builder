@@ -1,13 +1,13 @@
 ## macros/transpose_utils.sas
 
 + Ensure input dataset exists and contains cid, period, days, due variables
-+ Create %cmax_transpose ()
++ Create **%cmax_transpose** ()
 	+ For each client in each period, create CMax_days (days of delay) and CMax_due (count of months delay) of each period (periods as columns)
 
 
 ## macros/customer_features.sas
 
-+ Create %build_customer_level
++ Create **%build_customer_level**
 	+ Ensure transactions, cust_ids datasets exist
 	+ Ensure cid, aid, product, period, fin_period, status, due_installments, paid_installments, n_installments, installment, income, spendings, leftn_installments exist in transactions
 	+ Ensure cid exists in cust_ids
@@ -46,7 +46,7 @@
 ## 00A_build_abt_app.sas
 
 
-+ Create %make_abt_behavioral (From a customer_level dataset with one row per `cid` and monthly columns of max days/due (ins, css, all), compute rolling summaries over the last 3, 6, 9, 12 months ending at period, plus arrears/good+days counters)
++ Create **%make_abt_behavioral** (From a customer_level dataset with one row per `cid` and monthly columns of max days/due (ins, css, all), compute rolling summaries over the last 3, 6, 9, 12 months ending at period, plus arrears/good+days counters)
 	+ Ensure &data_in, &id in &data_in exist
 	+ Assign n_var_agr=6, n_sagr=3
 	+ Select a list of period from current period + max_length, one row per period (_np_periods)
@@ -61,10 +61,14 @@
 				+ Create act&length_n_arrears_days + Count of months with serious delinquency (act3_n_arrears_days)
 				+ Create act&length_n_good_days + Count of months with mild delay (act3_n_good_days)
 
-+ Create %_init_history_if_missing to ensure hist.transactions, hist.decisions exist
++ Create **%_init_history_if_missing** to ensure hist.transactions, hist.decisions exist
 
+| Step | Action | Example |
+| :---: | :--- | :--- |
+| 1 | If hist.transactions does not exist | Create it with columns: cid, aid, product, period, fin_period, status, due_installments, paid_installments, pay_days, n_installments, installment, spendings, income, leftn_installments (no rows). |
+| 2 | If hist.decisions does not exist | Create it with columns: cid, aid, product, period, decision, decline_reason, app_loan_amount, app_n_installments, pd, cross_pd, pr (no rows). |
 
-+ Create %build_abt_one_month (build application-level abt for one month using info as of the previous month)
++ Create **%build_abt_one_month** (build application-level abt for one month using info as of the previous month)
 
 | Step | What it does | Example output |
 | :---: | :--- |:--- |
@@ -82,18 +86,15 @@
 | 12 | Merge production + per-app loan/CC by aid | _np_abt_base |
 | 13 | Final merge: base + INS/CSS hist + active flag + behavioral by cid | &out_abt (e.g., abt.abt_202402, one row per application with all features) |
 
-	+ Ensure pot.Production & pot.transactions exist
-	+ Create hist.transaction if not exists
-	+ Select all rows with the target period in pot.Production (_np_month_prod)
-	+ Select all clients in the target period
-	+ Select all clients with active status in last period (period1) from hist.transactions (_np_cust_uni_active)
-	+ Create customer_level for ins and css product (_np_cus_ins_hist, _np_cus_ins_agr, _np_cus_css_hist, _np_cus_css_agr)
-	+ Count all loans in target period with active status (_np_cus_all)
-	+ For each row (loan/app), calculates customer credit capacity, actual number of ins, css, all product
-	+ Select cid, period, product, pay_days+15, due_installments from hist.transactions and cid in _np_cust_uni with period within target period and target period - max_length - 2
-	+ Transpose them to make aggregations and periods into columns and one row per one client
-	+ 
++ Create **%build_abt_monthly_from_potential** (build all monthly ABTs from pot.Production and pot.transactions), and bootstrap hist.transactions so each month has prior history
 
-
-
-+ Create %build_abt_app ()	
+| Step | What it does | Example |
+| :---: | :--- | :--- |
+| 1 | Get distinct periods from pot.Production, ordered | prod_periods = 202401#202402#202403, n_prod_periods = 3 |
+| 2 | Require at least 2 periods | Else error: need previous month |
+| 3 | Bootstrap: take transactions with fin_period = 202401 from pot.transactions and append to hist.transactions | So 202402 ABT can "see" Jan 2024 as history |
+| 4 | Loop n_month = 2 to n_prod_periods |  |
+| 4a | Set proc_period = current month, proc_period1 = previous month | e.g., 202402, 202401 |
+| 4b | Call %build_abt_one_month(..., out_abt = abt.abt_202402) | Creates abt.abt_202402 |
+| 4c | Append current month transactions (fin_period = 202402) to hist.transactions | So next iteration (202403) sees Jan + Feb |
+| 5 | Repeat for 202403 (proc_period = 202403, proc_period1 = 202402) | Creates abt.abt_202403 |
