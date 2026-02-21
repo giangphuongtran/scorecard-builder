@@ -1,9 +1,5 @@
 # new_process/new_sas — Macros & Steps Reference
 
-Tightened notes for all macros and step-based logic. Step tables use the same style as `%build_abt_one_month`.
-
----
-
 ## macros/customer_features.sas
 
 ### %build_customer_level(transactions=, cust_ids=, proc_period1=, product=, out_hist=, out_agr=)
@@ -30,7 +26,12 @@ Tightened notes for all macros and step-based logic. Step tables use the same st
 | C001 |
 | C002 |
 
-**Step 2 – Output (example):** *_np_cus_&product* — same structure as input, filtered rows.
+**Step 2 – Output (example):** *_np_cus_&product* — same columns as *transactions* above, but only rows where **cid** is in *cust_ids*, **period** ≤ proc_period1, and **product** = &product (e.g. `ins`). So it is the transaction history for the selected customers and product up to that month.
+
+| cid | aid | product | period | fin_period | status | due_installments | paid_installments | n_installments | installment | income | spendings | leftn_installments |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| C001 | A001 | ins | 202401 | 202401 | A | 0 | 6 | 12 | 500 | 3000 | 800 | 6 |
+| C001 | A002 | ins | 202312 | 202312 | C | 0 | 12 | 12 | 400 | 3000 | 600 | 0 |
 
 **Step 4 – Output (example):** *&out_agr*
 
