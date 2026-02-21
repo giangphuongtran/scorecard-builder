@@ -67,7 +67,7 @@
 + Create %build_abt_one_month (build application-level abt for one month using info as of the previous month)
 
 | Step | What it does | Example output |
-| :---: | :---: |:---: |
+| :---: | :--- |:--- |
 | 1 | Take applications for 202402 from pot.Production | _np_month_prod (rows with period = 202402) |
 | 2 | Distinct customers in that month | _np_cust_uni (e.g., C001, C002) |
 | 3 | Flag: had active loan in 202401 | _np_cust_uni_active (cid + act_cus_active = 1) |
