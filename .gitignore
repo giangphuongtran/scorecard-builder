@@ -1,4 +1,3 @@
-##########################
 # KEDRO PROJECT
 
 # ignore all local configuration
@@ -24,7 +23,6 @@ data/**
 # ignore file based logs
 *.log
 
-##########################
 # Common files
 
 # IntelliJ
