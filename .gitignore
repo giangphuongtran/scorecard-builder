@@ -158,3 +158,6 @@ venv.bak/
 
 # mlflow local runs
 mlruns/*
+
+software/
+.cursor/plans/
