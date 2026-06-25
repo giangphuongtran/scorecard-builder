@@ -1,8 +1,9 @@
 # Credit Scoring (Python + Kedro)
 
-End-to-end credit scorecard build on the SGH Advanced Scorecard Builder dataset: EDA → behavioral features → monthly simulation → application PD models (Ins + Css) → profit strategy → behavioral PD + monitoring.
+End-to-end credit scorecard: EDA → behavioral features → monthly simulation → application PD models (Ins + Css) → profit strategy → behavioral PD + monitoring.
 
 Full roadmap and glossary: `[documents/plan.md](documents/plan.md)`. Kedro setup and commands: `[documents/kedro_guide.md](documents/kedro_guide.md)`.
+Phase 4 implementation blueprint: `[documents/phase_4_scorecard.md](documents/phase_4_scorecard.md)`.
 
 ## Stack
 
@@ -17,6 +18,9 @@ Full roadmap and glossary: `[documents/plan.md](documents/plan.md)`. Kedro setup
 uv sync
 uv run kedro run                    # full pipeline
 uv run kedro run --pipeline=load_raw
+uv run kedro run --pipeline=behavioral
+uv run kedro run --pipeline=simulation
+uv run kedro viz
 ```
 
 Raw SAS inputs live under `data/raw/` (gitignored, licensed course data). Intermediate outputs use Kedro layers under `data/`.
@@ -42,6 +46,4 @@ credit-scoring/
 | Cross PD Css / PR Css | Optional | Post-hunt                              |
 
 
-## Data note
-
-Trained on SGH course data (not redistributable). Keep the repo private until license terms are confirmed; share view-only access for interviews.
+**Data note:** *Trained on a **private academic dataset** (not included in this repo; not redistributable). Clone gives code and docs only; place licensed inputs locally under* `data/` *to run the pipeline. Demo available on request.*

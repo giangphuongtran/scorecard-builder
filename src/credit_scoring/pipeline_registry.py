@@ -16,7 +16,10 @@ def register_pipelines() -> Dict[str, Pipeline]:
     behavioral_pipeline = create_behavioral_pl()
     simulation_pipeline = create_simulation_pl()
 
-    full_end_to_end_pipeline = load_raw_pipeline + behavioral_pipeline + simulation_pipeline
+    # The simulation pipeline rebuilds behavioral features from the approved pool.
+    # Keep the standalone behavioral export runnable, but exclude it from the
+    # default chain to avoid redundant work and mixed semantics.
+    full_end_to_end_pipeline = load_raw_pipeline + simulation_pipeline
 
     return {
         "__default__": full_end_to_end_pipeline,

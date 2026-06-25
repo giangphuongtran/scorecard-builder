@@ -1,25 +1,19 @@
-"""
-This module contains example tests for a Kedro project.
-Tests should be placed in ``src/tests``, in modules that mirror your
-project's structure, and in files named test_*.py.
-"""
-import pytest
-from pathlib import Path
-from kedro.framework.session import KedroSession
-from kedro.framework.startup import bootstrap_project
+from credit_scoring.pipeline_registry import register_pipelines
 
-# The tests below are here for the demonstration purpose
-# and should be replaced with the ones testing the project
-# functionality
 
-class TestKedroRun:
-    def test_kedro_run_no_pipeline(self):
-    # This example test expects a pipeline run failure, since
-    # the default project template contains no pipelines.
-        bootstrap_project(Path.cwd())
+def test_pipeline_registry_exposes_expected_pipelines():
+    pipelines = register_pipelines()
 
-        with pytest.raises(Exception) as excinfo:
-            with KedroSession.create(project_path=Path.cwd()) as session:
-                session.run()
+    assert set(pipelines) == {"__default__", "load_raw", "behavioral", "simulation"}
 
-        assert "Pipeline contains no nodes" in str(excinfo.value)
+
+def test_default_pipeline_matches_load_raw_plus_simulation():
+    pipelines = register_pipelines()
+
+    default_nodes = {node.name for node in pipelines["__default__"].nodes}
+    load_raw_nodes = {node.name for node in pipelines["load_raw"].nodes}
+    simulation_nodes = {node.name for node in pipelines["simulation"].nodes}
+    behavioral_nodes = {node.name for node in pipelines["behavioral"].nodes}
+
+    assert default_nodes == load_raw_nodes | simulation_nodes
+    assert default_nodes.isdisjoint(behavioral_nodes)
