@@ -160,4 +160,7 @@ venv.bak/
 mlruns/*
 
 software/
+data/
+documents/
+AGENTS.md
 .cursor/plans/
