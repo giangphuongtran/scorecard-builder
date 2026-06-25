@@ -1,95 +1,47 @@
-# Credit Scoring Risk Models & Decision Engine
+# Credit Scoring (Python + Kedro)
 
-A comprehensive credit risk modeling system for predicting loan defaults and implementing automated credit acceptance strategies. This project builds multiple risk and marketing models using both traditional statistical methods (SAS) and modern machine learning techniques (Python).
+End-to-end credit scorecard build on the SGH Advanced Scorecard Builder dataset: EDA → behavioral features → monthly simulation → application PD models (Ins + Css) → profit strategy → behavioral PD + monitoring.
 
-## 🎯 Project Overview
+Full roadmap and glossary: `[documents/plan.md](documents/plan.md)`. Kedro setup and commands: `[documents/kedro_guide.md](documents/kedro_guide.md)`.
 
-This project develops a complete credit scoring pipeline that includes:
-- **Risk Models**: Probability of Default (PD) models for different loan products
-- **Marketing Model**: Response probability model for cross-selling
-- **Decision Engine**: Automated rules-based system for credit acceptance
-- **Simulation & Profitability Analysis**: Backtesting and profit/loss evaluation over historical periods (1975-1987)
+## Stack
 
-## 📊 Models
+- **Python:** pandas, numpy, scikit-learn, statsmodels, optbinning
+- **Pipeline:** Kedro (`kedro run`)
+- **Tracking (optional):** MLflow
+- **Serving (Phase 5b):** FastAPI
 
-### 1. PD Ins Model
-**Target**: `default12 = 1` for instalment loans (`product = 'ins'`)  
-**Purpose**: Predicts the probability of default within 12 months for instalment loan products.
+## Quick start
 
-### 2. PD Css Model
-**Target**: `default12 = 1` for cash loans (`product = 'css'`)  
-**Purpose**: Predicts the probability of default within 12 months for cash loan products.
+```bash
+uv sync
+uv run kedro run                    # full pipeline
+uv run kedro run --pipeline=load_raw
+```
 
-### 3. PD Css Cross Model
-**Target**: `default_cross12 = 1` for cash loans at the time of applying for instalment loan  
-**Purpose**: Estimates default risk for existing cash loan customers when they apply for an instalment loan.
+Raw SAS inputs live under `data/raw/` (gitignored, licensed course data). Intermediate outputs use Kedro layers under `data/`.
 
-### 4. PR Css Cross Model (Marketing Model)
-**Target**: `cross_response = 1` when applying for instalment and/or cash loan  
-**Purpose**: Predicts the probability of cross-selling response, enabling marketing campaign optimization.
+## Project layout
 
-### 5. Decision Engine
-**Purpose**: Implements business rules combining all models to automate credit acceptance decisions with optimized risk-return trade-offs.
+```
+credit-scoring/
+├── conf/                  # Kedro catalog + parameters
+├── documents/             # plan.md, kedro_guide.md
+├── notebooks/             # Phase work (01_eda_raw, 02_behavioral_features, …)
+├── src/credit_scoring/    # behavioral/, simulation/, pipelines/
+└── data/                  # raw (gitignored) + Kedro outputs
+```
 
-### 6. Profitability Analysis
-**Period**: 1975-1987  
-**Purpose**: Evaluates the financial performance of the credit acceptance strategy through comprehensive profit and loss reporting.
+## Models (hunt-mode scope)
 
-## 🛠️ Technologies
 
-### Data Processing & Modeling
-- **SAS**: Traditional credit scoring pipeline, WOE transformation, variable selection, scorecard development
-- **Python**: Machine learning models and advanced analytics
-  - `pandas`, `numpy` - Data manipulation
-  - `scikit-learn` - Traditional ML algorithms
-  - `XGBoost` - Gradient boosting models
-  - `TensorFlow/Keras` - Neural networks
-  - `SHAP` - Model interpretability
-  - `statsmodels` - Statistical modeling
+| Model                 | Status   | Notes                                  |
+| --------------------- | -------- | -------------------------------------- |
+| PD Ins / PD Css       | Phase 4  | Application scorecards, WOE + logistic |
+| Behavioral PD         | Phase 5b | Monthly re-score on active loans       |
+| Cross PD Css / PR Css | Optional | Post-hunt                              |
 
-### Analysis & Visualization
-- **Jupyter Notebooks** - Interactive data analysis and model development
-- **Matplotlib/Plotly** - Data visualization
-- **Excel** - Business reporting and scorecard presentation
 
-### Tools
-- `pyreadstat` / `sas7bdat` - Reading SAS datasets in Python
-- `openpyxl`, `XlsxWriter` - Excel file generation
+## Data note
 
-## 📁 Project Structure
-TBD
-
-## 🔄 Workflow
-
-1. **Data Preparation**: Create Analysis Base Tables (ABT) with train/validation splits
-2. **Feature Engineering**: 
-   - Variable binning (nominal and interval)
-   - WOE (Weight of Evidence) transformation
-   - Variable selection and pre-screening
-3. **Model Development**: Build 4 models (PD Ins, PD Css, PD Css Cross, PR Css Cross)
-4. **Model Validation**: 
-   - Bootstrap validation
-   - Cross-validation
-   - Gini coefficient evaluation
-   - Model assessment reports
-5. **Calibration**: Finalize cut-offs and decision rules
-6. **Decision Engine**: Implement automated credit acceptance rules
-7. **Simulation**: Run historical backtesting (1975-1987)
-8. **Reporting**: Generate profit/loss reports and model documentation
-
-## 📈 Model Performance Metrics
-
-- **Gini Coefficient**: Model discrimination ability
-- **KS Statistic**: Kolmogorov-Smirnov test for model separation
-- **AUC-ROC**: Area Under the ROC Curve
-- **Bootstrap Validation**: Robust performance estimates
-- **Profit/Loss Metrics**: Business impact evaluation
-
-## 📚 Methodology
-
-The project follows industry-standard credit risk modeling practices:
-- **WOE Transformation**: Weight of Evidence for categorical variables
-- **Variable Selection**: Statistical significance testing and correlation analysis
-- **Model Validation**: Train/validation/test splits with bootstrap resampling
-- **Scorecard Development**: Point-based scoring system
-- **Decision Rules**: Risk-based acceptance/rejection thresholds
+Trained on SGH course data (not redistributable). Keep the repo private until license terms are confirmed; share view-only access for interviews.

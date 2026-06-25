@@ -1,0 +1,33 @@
+raw_paths:
+  production: data/01_raw/production.sas7bdat
+  transactions: data/01_raw/transactions.sas7bdat
+  default: data/01_raw/default.sas7bdat
+
+behavioral:
+  max_length: 12
+  window_lengths: [3, 6, 9, 12]
+  stats: ["Mean", "Max", "Min"]
+  base_vars:
+    - CMaxI_Days
+    - CMaxI_Due
+    - CMaxC_Days
+    - CMaxC_Due
+    - CMaxA_Days
+    - CMaxA_Due
+  grace_days: 15
+  nmiss_threshold: 1
+  product_streams:
+    - prefix: CMaxI
+      product: ins
+    - prefix: CMaxC
+      product: css
+    - prefix: CMaxA
+      product: null
+  start_period: "197502"
+  end_period: "198712"
+
+simulation:
+  start_period: "197501"
+  end_period: "198712"
+  seed_period: null
+  burn_in_before: "197501"

@@ -1,0 +1,119 @@
+# Raw Inputs (SAS Layer)
+production_raw:
+  type: pandas.GenericDataset
+  filepath: data/01_raw/production.sas7bdat
+  file_format: sas
+  load_args:
+    format: sas7bdat
+    encoding: utf-8
+
+transactions_raw:
+  type: pandas.GenericDataset
+  filepath: data/01_raw/transactions.sas7bdat
+  file_format: sas
+  load_args:
+    format: sas7bdat
+    encoding: utf-8
+
+default_raw:
+  type: pandas.GenericDataset
+  filepath: data/01_raw/default.sas7bdat
+  file_format: sas
+  load_args:
+    format: sas7bdat
+    encoding: utf-8
+
+# Intermediate Outputs (Parquet Layer)
+production_parquet:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/production.parquet
+  save_args:
+    engine: pyarrow # or fastparquet
+    index: False
+
+transactions_parquet:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/transactions.parquet
+  save_args:
+    engine: pyarrow # or fastparquet
+    index: False
+
+default_parquet:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/default.parquet
+  save_args:
+    engine: pyarrow # or fastparquet
+    index: False
+
+# --- Data Processing Stubs ---
+behavioral_features:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/behavioral_features.parquet
+  save_args:
+    engine: pyarrow
+    index: false
+
+abt_app:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/abt_app.parquet
+  save_args:
+    engine: pyarrow
+    index: false
+    
+decisions:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/decisions.parquet
+  save_args:
+    engine: pyarrow
+    index: false
+
+# --- Data Science Stubs ---
+binned_stub:
+  type: pandas.ParquetDataset
+  filepath: data/05_model_input/binned_stub.parquet
+
+woe_maps_stub:
+  type: pickle.PickleDataset
+  filepath: data/06_models/woe_maps_stub.pkl
+
+pd_ins_stub:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_ins_stub.pkl
+
+pd_css_stub:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_css_stub.pkl
+
+calibration_params:
+  type: json.JSONDataset
+  filepath: data/06_models/calibration_params.json
+
+# --- Strategy & Reporting Stubs ---
+decisions_strategy:
+  type: pandas.ParquetDataset
+  filepath: data/07_model_output/decisions_strategy.parquet
+
+profit_stub:
+  type: pandas.ParquetDataset
+  filepath: data/08_reporting/profit_stub.parquet
+
+profit_report:
+  type: text.TextDataset
+  filepath: data/08_reporting/profit_report.html
+
+# --- Behavioral Scoring Stubs ---
+behavioral_abt_stub:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/behavioral_abt_stub.parquet
+
+pd_behavioral_stub:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_behavioral_stub.pkl
+
+monitoring_stub:
+  type: pandas.ParquetDataset
+  filepath: data/08_reporting/monitoring_stub.parquet
+
+api_readme_stub:
+  type: text.TextDataset
+  filepath: api/README.txt

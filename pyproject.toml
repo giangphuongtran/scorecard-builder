@@ -1,0 +1,68 @@
+[build-system]
+requires = [
+    "setuptools",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.10"
+name = "credit_scoring"
+readme = "README.md"
+dynamic = [
+    "version",
+]
+dependencies = [
+    "ipython>=8.10",
+    "jupyterlab>=3.0",
+    "notebook",
+    "kedro~=1.4.0",
+    "pandas>=2.3.3",
+    "pyreadstat>=1.3.5",
+    "kedro-datasets>=9.4.0",
+    "pyarrow>=24.0.0",
+    "kedro-viz>=12.4.0",
+]
+
+[project.scripts]
+credit-scoring = "credit_scoring.__main__:main"
+
+[project.entry-points."kedro.hooks"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-cov>=3,<7",
+    "pytest-mock>=1.7.1, <2.0",
+    "pytest~=7.2",
+    "ruff~=0.12.0",
+]
+
+[tool.setuptools.dynamic.version]
+attr = "credit_scoring.__version__"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+namespaces = false
+
+[tool.kedro]
+package_name = "credit_scoring"
+project_name = "credit_scoring"
+kedro_init_version = "1.4.0"
+tools = "['Testing', 'Custom Logging', 'Data Structure']"
+example_pipeline = "False"
+source_dir = "src"
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov src/credit_scoring -ra"
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+]
+
+[tool.kedro_telemetry]
+project_id = "a9dbc0d56aaa47eeac12c71f6589e22f"
