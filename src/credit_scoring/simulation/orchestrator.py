@@ -42,12 +42,12 @@ def run_simulation(production: pd.DataFrame,
         cust_unique = get_cust_unique(production, proc_period)
 
         behavioral = build_behavioral_for_month(
-            approved_tx, production, proc_period, proc_period1, params
+            transactions, production, proc_period, proc_period1, params
         )
-        agg_all = build_cust_all_agg(approved_tx, month_prod, cust_unique, proc_period)
-        agg_ins = build_cust_product_agg(approved_tx, cust_unique, proc_period1, "ins")
-        agg_css = build_cust_product_agg(approved_tx, cust_unique, proc_period1, "css")
-        active_flag = build_cust_active_flag(approved_tx, proc_period1)
+        agg_all = build_cust_all_agg(transactions, month_prod, cust_unique, proc_period)
+        agg_ins = build_cust_product_agg(transactions, cust_unique, proc_period1, "ins")
+        agg_css = build_cust_product_agg(transactions, cust_unique, proc_period1, "css")
+        active_flag = build_cust_active_flag(transactions, proc_period1)
 
         abt_month = assemble_abt_month(
             month_prod, behavioral, agg_all, agg_ins, agg_css, active_flag, proc_period

@@ -29,5 +29,5 @@ behavioral:
 simulation:
   start_period: "197501"
   end_period: "198712"
-  seed_period: null
+  seed_period: "197501"
   burn_in_before: "197501"
