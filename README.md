@@ -4,6 +4,7 @@ End-to-end credit scorecard: EDA → behavioral features → monthly simulation 
 
 Full roadmap and glossary: `[documents/plan.md](documents/plan.md)`. Kedro setup and commands: `[documents/kedro_guide.md](documents/kedro_guide.md)`.
 Phase 4 implementation blueprint: `[documents/phase_4_scorecard.md](documents/phase_4_scorecard.md)`.
+Next steps (Phase 5b + recruiter shipping): `[documents/next_steps.md](documents/next_steps.md)`.
 
 ## Stack
 

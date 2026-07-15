@@ -31,3 +31,64 @@ simulation:
   end_period: "198712"
   seed_period: "197501"
   burn_in_before: "197501"
+
+binning:
+  ncategories_int: 4
+  minimum_share_int: 0.03
+  ncategories_nom: 4
+  symbol_missing: "Missing"
+  symbol_other: "<OTHERS>"
+  tree_random_state: 1234
+  woe_epsilon: 1.0e-4
+  nominal_int_threshold: 10
+
+model:
+  target: default12
+  time_col: period
+  id_col: aid
+  train_end_period: "198412"
+  valid_start_period: "198501"
+  iv_min: 0.02
+  gini_min: 0.05
+  psi_max: 0.25
+  ar_diff_max: 0.20
+  pvalue_max: 0.05
+  vif_max: 5.0
+  pearson_max: 0.7
+  ar_diff_model_max: 0.10
+  max_features: 12
+  epsilon: 1.0e-4
+  factor: 28.8539007098   # 20 / ln(2)
+  offset: 487.1194695278  # 600 - factor * ln(50)
+
+profit:
+  window_start: "197501"
+  window_end: "198712"
+  burn_in_before: "197501"
+  reference: 731882
+  economics:
+    ins:
+      lgd: 0.45
+      apr_annual: 0.01
+      provision: 0.0
+    css:
+      lgd: 0.55
+      apr_annual: 0.18
+      provision: 0.0
+  cutoffs:
+    # pd_css: 0.20823287081530759
+    pd_css: 0.9
+    pd_ins_high: 0.0053289790410611425
+  bad_customer:
+    enabled: true
+    feature: agr12_Max_CMaxA_Due
+    threshold: 3
+  artifacts:
+    ins:
+      package: data/06_models/pd_ins_v2.pkl
+      points: data/06_models/points_table_ins_v2.parquet
+      calib: data/06_models/calibration_params_ins_v2.json
+    css:
+      package: data/06_models/pd_css_v2.pkl
+      points: data/06_models/points_table_css_v2.parquet
+      calib: data/06_models/calibration_params_css_v2.json

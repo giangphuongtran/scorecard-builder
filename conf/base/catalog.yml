@@ -67,35 +67,121 @@ decisions:
     engine: pyarrow
     index: false
 
-# --- Data Science Stubs ---
-binned_stub:
+# --- Scorecard (Phase 4) ---
+abt_model:
   type: pandas.ParquetDataset
-  filepath: data/05_model_input/binned_stub.parquet
+  filepath: data/04_feature/abt_model.parquet
+  save_args:
+    engine: pyarrow
+    index: false
 
-woe_maps_stub:
+binning_maps:
   type: pickle.PickleDataset
-  filepath: data/06_models/woe_maps_stub.pkl
+  filepath: data/06_models/binning_maps.pkl
 
-pd_ins_stub:
+train_binned:
   type: pickle.PickleDataset
-  filepath: data/06_models/pd_ins_stub.pkl
+  filepath: data/05_model_input/train_binned.pkl
 
-pd_css_stub:
+valid_binned:
   type: pickle.PickleDataset
-  filepath: data/06_models/pd_css_stub.pkl
+  filepath: data/05_model_input/valid_binned.pkl
+
+woe_maps:
+  type: pickle.PickleDataset
+  filepath: data/06_models/woe_maps.pkl
+
+train_woe:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/train_woe.pkl
+
+valid_woe:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/valid_woe.pkl
+
+iv_table:
+  type: pickle.PickleDataset
+  filepath: data/06_models/iv_table.pkl
+
+feature_screen_report:
+  type: pickle.PickleDataset
+  filepath: data/06_models/feature_screen_report.pkl
+
+pd_ins:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_ins.pkl
+
+pd_css:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_css.pkl
+
+points_tables:
+  type: pickle.PickleDataset
+  filepath: data/06_models/points_tables.pkl
+
+model_diagnostics:
+  type: json.JSONDataset
+  filepath: data/06_models/model_diagnostics.json
+
+scores_valid:
+  type: pickle.PickleDataset
+  filepath: data/06_models/scores_valid.pkl
 
 calibration_params:
   type: json.JSONDataset
   filepath: data/06_models/calibration_params.json
 
-# --- Strategy & Reporting Stubs ---
+calibration_diagnostics:
+  type: json.JSONDataset
+  filepath: data/06_models/calibration_diagnostics.json
+
+# --- Profit (Phase 5 offline; MemoryDataset intermediate) ---
+scored_abt_profit:
+  type: MemoryDataset
+
+# --- Gate B scorecards (Phase 5 offline / re-sim) ---
+pd_ins_v2:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_ins_v2.pkl
+
+pd_css_v2:
+  type: pickle.PickleDataset
+  filepath: data/06_models/pd_css_v2.pkl
+
+points_table_ins_v2:
+  type: pandas.ParquetDataset
+  filepath: data/06_models/points_table_ins_v2.parquet
+
+points_table_css_v2:
+  type: pandas.ParquetDataset
+  filepath: data/06_models/points_table_css_v2.parquet
+
+calibration_params_ins_v2:
+  type: json.JSONDataset
+  filepath: data/06_models/calibration_params_ins_v2.json
+
+calibration_params_css_v2:
+  type: json.JSONDataset
+  filepath: data/06_models/calibration_params_css_v2.json
+
+# --- Profit / strategy (Phase 5) ---
 decisions_strategy:
   type: pandas.ParquetDataset
   filepath: data/07_model_output/decisions_strategy.parquet
+  save_args:
+    engine: pyarrow
+    index: false
 
-profit_stub:
+profit_by_loan:
   type: pandas.ParquetDataset
-  filepath: data/08_reporting/profit_stub.parquet
+  filepath: data/08_reporting/profit_by_loan.parquet
+  save_args:
+    engine: pyarrow
+    index: false
+
+profit_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/profit_summary.json
 
 profit_report:
   type: text.TextDataset

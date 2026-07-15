@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from credit_scoring.scorecard.binning import apply_bins, fit_bin_numeric, fit_bin_nominal
-from credit_scoring.scorecard.fit import prepare_target
+from credit_scoring.scorecard.binning import apply_bins, fit_bin_numeric
+from credit_scoring.scorecard.fit import prepare_abt, prepare_target
+from credit_scoring.scorecard.params import merge_scorecard_params
 from credit_scoring.scorecard.partition import partition_abt
 from credit_scoring.scorecard.selection import (
     ID_COLS,
@@ -20,6 +21,40 @@ def test_prepare_target_maps_sentinels():
     out = prepare_target(df)
     assert set(out["default12"].unique()) <= {0, 1}
     assert len(out) == 4
+
+
+def test_prepare_abt_merges_and_filters_accepted():
+    abt = pd.DataFrame(
+        {
+            "aid": ["a1", "a2", "a3"],
+            "cid": [1, 2, 3],
+            "period": ["198401", "198401", "198501"],
+            "product": ["css", "css", "ins"],
+            "default12": [0, 1, 0],
+            "app_income": [1000.0, 2000.0, 1500.0],
+        }
+    )
+    decisions = pd.DataFrame(
+        {
+            "aid": ["a1", "a2", "a3"],
+            "decision": ["A", "D", "A"],
+            "decline_reason": ["", "policy", ""],
+        }
+    )
+    out = prepare_abt(abt, decisions, {"target": "default12"}, accepted_only=True)
+    assert set(out["aid"]) == {"a1", "a3"}
+    assert "decision" in out.columns
+    assert out["aid"].is_unique
+
+
+def test_merge_scorecard_params_model_overrides_binning():
+    merged = merge_scorecard_params(
+        {"woe_epsilon": 1e-4, "tree_random_state": 1},
+        {"target": "default12", "woe_epsilon": 1e-3},
+    )
+    assert merged["target"] == "default12"
+    assert merged["woe_epsilon"] == 1e-3
+    assert merged["tree_random_state"] == 1
 
 
 def test_get_candidate_features_excludes_ids_and_leakage():

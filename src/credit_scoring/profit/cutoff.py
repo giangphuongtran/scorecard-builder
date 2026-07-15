@@ -1,0 +1,58 @@
+"""As-if profit U-curves and optimal PD cut-offs."""
+
+from __future__ import annotations
+
+import pandas as pd
+
+
+def profit_curve_by_pd(
+    df: pd.DataFrame,
+    product: str,
+    pd_col: str = "pd",
+) -> pd.DataFrame:
+    """Cumulative profit / AR vs PD threshold for one product (sorted ascending PD)."""
+    sub = df.loc[df["product"].eq(product)].copy()
+    if sub.empty:
+        return pd.DataFrame(
+            columns=[
+                "pd",
+                "n",
+                "n_cum",
+                "ar",
+                "profit",
+                "profit_cum",
+                "bad_rate_cum",
+                "defaults_cum",
+            ]
+        )
+    sub = sub.sort_values(pd_col, ascending=True).reset_index(drop=True)
+    g = (
+        sub.groupby(pd_col, sort=True)
+        .agg(n=("aid", "size"), profit=("profit", "sum"), defaults=("default12", "sum"))
+        .reset_index()
+        .rename(columns={pd_col: "pd"})
+    )
+    g["n_cum"] = g["n"].cumsum()
+    g["profit_cum"] = g["profit"].cumsum()
+    g["defaults_cum"] = g["defaults"].cumsum()
+    g["ar"] = g["n_cum"] / g["n"].sum()
+    g["bad_rate_cum"] = g["defaults_cum"] / g["n_cum"]
+    return g[
+        ["pd", "n", "n_cum", "ar", "profit", "profit_cum", "bad_rate_cum", "defaults_cum"]
+    ]
+
+
+def find_optimal_cutoff(curve: pd.DataFrame) -> dict:
+    """Return cut-off at max profit_cum; ties -> lower PD (more conservative)."""
+    if curve.empty:
+        raise ValueError("empty profit curve")
+    peak = curve["profit_cum"].max()
+    at_peak = curve.loc[curve["profit_cum"] == peak]
+    row = at_peak.nsmallest(1, "pd").iloc[0]
+    return {
+        "pd_cutoff": float(row["pd"]),
+        "peak_profit": float(row["profit_cum"]),
+        "ar_at_peak": float(row["ar"]),
+        "n_accepted": int(row["n_cum"]),
+        "accepted_bad_rate": float(row["bad_rate_cum"]),
+    }

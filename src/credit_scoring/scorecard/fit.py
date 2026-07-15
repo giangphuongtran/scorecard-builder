@@ -25,22 +25,43 @@ def prepare_target(df: pd.DataFrame, target: str = "default12") -> pd.DataFrame:
     return out
 
 
+def prepare_abt(
+    abt: pd.DataFrame,
+    decisions: pd.DataFrame,
+    params: dict | None = None,
+    *,
+    accepted_only: bool = True,
+) -> pd.DataFrame:
+    """Merge ABT with decisions, prepare the target, optionally keep accepted only.
+
+    Actions:
+    1. Left-merge ``decision`` / ``decline_reason`` on ``aid``.
+    2. Call ``prepare_target`` for ``default12`` (or ``params["target"]``).
+    3. Optionally filter to ``decision == "A"``.
+    4. Assert ``aid`` uniqueness on the modeling frame.
+    """
+    params = params or {}
+    target = params.get("target", "default12")
+    decision_cols = [c for c in ("aid", "decision", "decline_reason") if c in decisions.columns]
+    merged = abt.merge(decisions[decision_cols], on="aid", how="left")
+    out = prepare_target(merged, target=target)
+    if accepted_only:
+        out = out[out["decision"] == "A"].copy()
+    if not out["aid"].is_unique:
+        raise ValueError("Prepared ABT must have unique aid values")
+    return out
+
+
 def load_and_prepare_abt(abt_path: str | Path, decisions_path: str | Path) -> pd.DataFrame:
-    """Merge application base table with decisions and prepare the target.
+    """Load parquet paths, then merge and prepare the target (all decisions).
 
     Actions:
     1. Read ``abt_app`` and ``decisions`` parquet files.
-    2. Left-merge decision fields on ``aid``.
-    3. Call ``prepare_target`` for ``default12``.
+    2. Delegate to ``prepare_abt`` without accepted-only filter.
     """
     abt = pd.read_parquet(abt_path)
     decisions = pd.read_parquet(decisions_path)
-    merged = abt.merge(
-        decisions[["aid", "decision", "decline_reason"]],
-        on="aid",
-        how="left",
-    )
-    return prepare_target(merged)
+    return prepare_abt(abt, decisions, accepted_only=False)
 
 
 def train_pd_model(
