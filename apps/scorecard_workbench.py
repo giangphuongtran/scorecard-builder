@@ -202,7 +202,7 @@ def _render_toolbar(available: list[str]) -> tuple[str, dict]:
         st.markdown("**Scorecard dossier**")
         product = st.selectbox("Scorecard dossier", available, index=0, label_visibility="collapsed")
     with col_right:
-        st.markdown(project_badges(), unsafe_allow_html=True)
+        st.markdown(github_badge(), unsafe_allow_html=True)
     bundle = _load_bundle(product)
     if not bundle:
         st.warning(
