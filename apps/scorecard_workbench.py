@@ -365,40 +365,12 @@ def tab_calibration(bundle: dict) -> None:
     report = bundle.get("model_report") or {}
     calib = bundle.get("calibration") or {}
 
-    _section("Platt parameters")
-    params = report.get("Calibration_params")
-    if params is None or (isinstance(params, pd.DataFrame) and params.empty):
-        raw = calib.get("params", {})
-        if isinstance(raw, dict) and ("a" in raw or "b" in raw):
-            params = pd.DataFrame([{"a": raw.get("a"), "b": raw.get("b")}])
-    _show_df(params if params is not None else pd.DataFrame())
-
     _section("Diagnostics")
     diag = report.get("Calibration_diagnostics")
     if diag is None or (isinstance(diag, pd.DataFrame) and diag.empty):
         d = calib.get("diagnostics")
         diag = pd.DataFrame([d]) if d else pd.DataFrame()
     _show_df(diag)
-
-    _section("ROC before / after")
-    scored = bundle.get("scored_valid")
-    pkg = bundle.get("model_package") or {}
-    target = str(pkg.get("target") or (calib.get("params") or {}).get("target") or "default12")
-    if isinstance(scored, pd.DataFrame) and "score" in scored.columns and target in scored.columns:
-        y = scored[target]
-        score = scored["score"]
-        pd_s = scored["pd"] if "pd" in scored.columns else None
-        if pd_s is None and calib.get("params"):
-            from credit_scoring.profit.scoring import normalize_calib_params, score_to_pd
-
-            try:
-                a, b = normalize_calib_params(calib.get("params", calib))
-                pd_s = pd.Series(score_to_pd(score.to_numpy(), a, b), index=score.index)
-            except Exception:
-                pd_s = None
-        _show_fig(fig_roc_before_after(y, score, pd_s))
-    else:
-        st.info("Need scored_valid with score + target for ROC.")
 
     _section("Score deciles")
     dec = report.get("Calibration_deciles")
