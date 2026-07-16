@@ -1,0 +1,6 @@
+{
+  "intercept": 16.882274408130648,
+  "coef": -0.034657359157694634,
+  "target": "cross_response",
+  "score_col": "score"
+}
