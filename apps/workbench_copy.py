@@ -159,3 +159,10 @@ DECISION_PLAIN = {
     "D": ("Declined", "This application did not meet the policy's risk requirements."),
     "N": ("No decision", "The policy could not reach a clear outcome for this input."),
 }   
+
+PRODUCT_NAMES = {
+    "ins": "Installment Loan (ins)",
+    "css": "Cash / Card (css)",
+    "pr": "Propensity to Buy (pr)",
+    "cross": "Cross-product Risk (cross)"
+}

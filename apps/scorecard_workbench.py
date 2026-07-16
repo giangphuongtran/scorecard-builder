@@ -20,20 +20,20 @@ if str(ROOT / "src") not in sys.path:
 if str(APPS_DIR) not in sys.path:
     sys.path.insert(0, str(APPS_DIR))
 
-import streamlit as st  # noqa: E402
+import streamlit as st
 
-from workbench_copy import (  # noqa: E402
+from workbench_copy import (
     DATA_DISCLAIMER,
     DECISION_PLAIN,
     GLOSSARY,
     MEASURED_OUTCOMES,
     PIPELINE_PHASES,
-    STACK,
+    PRODUCT_NAMES,
     TAGLINE,
     TITLE,
     github_badge,
 )
-from credit_scoring.profit.cutoff_explore import (  # noqa: E402
+from credit_scoring.profit.cutoff_explore import (
     DEFAULT_ASIF_PATH,
     DEFAULT_BUNDLE_DIR,
     DEFAULT_META_PATH,
@@ -42,17 +42,17 @@ from credit_scoring.profit.cutoff_explore import (  # noqa: E402
     load_workbench_product_bundle,
     u_curves_by_product,
 )
-from credit_scoring.profit.pnl import installment_amount  # noqa: E402
-from credit_scoring.profit.rules import apply_strategy, rules_from_params  # noqa: E402
-from credit_scoring.profit.scoring import score_abt_application  # noqa: E402
-from credit_scoring.scorecard.big_scorecard import _bin_condition  # noqa: E402
-from credit_scoring.scorecard.feature_labels import (  # noqa: E402
+from credit_scoring.profit.pnl import installment_amount
+from credit_scoring.profit.rules import apply_strategy, rules_from_params
+from credit_scoring.profit.scoring import score_abt_application
+from credit_scoring.scorecard.big_scorecard import _bin_condition
+from credit_scoring.scorecard.feature_labels import (
     display_label,
     interpret_feature,
     strip_woe,
     variables_table_frame,
 )
-from credit_scoring.scorecard.reports import (  # noqa: E402
+from credit_scoring.scorecard.reports import (
     CUTOFF_DISPLAY,
     POLICY_FLOW_STEPS,
     format_report_frame,
@@ -197,19 +197,26 @@ def _render_landing() -> None:
 
 
 def _render_toolbar(available: list[str]) -> tuple[str, dict]:
-    col_left, col_right = st.columns([3, 1])
-    with col_left:
-        st.markdown("**Scorecard dossier**")
-        product = st.selectbox("Scorecard dossier", available, index=0, label_visibility="collapsed")
-    with col_right:
-        st.markdown(github_badge(), unsafe_allow_html=True)
-    bundle = _load_bundle(product)
+    st.markdown("**Scorecard dossier**")
+    
+    # Map raw keys to full names for display, fallback to key if name is missing
+    display_options = {p: PRODUCT_NAMES.get(p, p.upper()) for p in available}
+    
+    selected_display = st.selectbox(
+        "Scorecard dossier", 
+        options=list(display_options.keys()), 
+        format_func=lambda x: display_options[x],
+        index=0, 
+        label_visibility="collapsed"
+    )
+    
+    bundle = _load_bundle(selected_display)
     if not bundle:
         st.warning(
-            f"No bundle at `{DEFAULT_BUNDLE_DIR / product}`. "
+            f"No bundle at `{DEFAULT_BUNDLE_DIR / selected_display}`. "
             "Save via `save_workbench_product_bundle` after fit in notebook 05."
         )
-    return product, bundle
+    return selected_display, bundle
 
 
 def _render_policy_flow() -> None:

@@ -124,12 +124,6 @@ flowchart LR
     simNode --> decisions[decisions]
 ```
 
-![Kedro default pipeline](docs/images/kedro-pipeline-default.png)
-
-Simulation-only detail:
-
-![Kedro simulation pipeline](docs/images/kedro-pipeline-simulation.png)
-
 ### Behavioral pipeline (`kedro run --pipeline=behavioral`)
 
 Standalone export of rolling payment features (also embedded inside simulation).
@@ -140,8 +134,6 @@ flowchart LR
     txPq[transactions_parquet] --> behNode
     behNode --> behFeat[behavioral_features]
 ```
-
-![Kedro behavioral pipeline](docs/images/kedro-pipeline-behavioral.png)
 
 ### Scorecard pipeline (`kedro run --pipeline=scorecard`)
 
@@ -162,8 +154,6 @@ flowchart LR
     cal --> calParams[calibration_params]
 ```
 
-![Kedro scorecard pipeline](docs/images/kedro-pipeline-scorecard.png)
-
 ### Profit pipeline (`kedro run --pipeline=profit`)
 
 Score the application ABT, apply the rule-based strategy, and report offline P&L.
@@ -180,8 +170,6 @@ flowchart LR
     decStrat --> report
     report --> profitSum[profit_summary]
 ```
-
-![Kedro profit pipeline](docs/images/kedro-pipeline-profit.png)
 
 ## Results
 
