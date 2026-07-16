@@ -161,12 +161,12 @@ venv.bak/
 mlruns/*
 
 software/
-data/
+# data/
 documents/
 AGENTS.md
 .cursor/
 
 scripts/
 
-!data/06_models/pd_ins_v6.pkl
-!data/06_models/pd_css_v6.pkl
+# !data/06_models/pd_ins_v6.pkl
+# !data/06_models/pd_css_v6.pkl

@@ -31,7 +31,7 @@ from workbench_copy import (  # noqa: E402
     STACK,
     TAGLINE,
     TITLE,
-    project_badges,
+    github_badge,
 )
 from credit_scoring.profit.cutoff_explore import (  # noqa: E402
     DEFAULT_ASIF_PATH,
@@ -175,8 +175,7 @@ def _profit_eval(yml: dict) -> dict | None:
 def _render_landing() -> None:
     st.title(TITLE)
     st.markdown(TAGLINE)
-    st.markdown(project_badges(), unsafe_allow_html=True)
-    st.caption(STACK)
+    st.markdown(github_badge(), unsafe_allow_html=True)
 
     with st.expander("About this project — how it works, step by step", expanded=False):
         st.markdown("**The pipeline, in plain English**")

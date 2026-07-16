@@ -158,4 +158,4 @@ DECISION_PLAIN = {
     "A": ("Approved", "This application meets the policy's risk requirements."),
     "D": ("Declined", "This application did not meet the policy's risk requirements."),
     "N": ("No decision", "The policy could not reach a clear outcome for this input."),
-}
+}   
