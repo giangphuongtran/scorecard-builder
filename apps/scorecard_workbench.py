@@ -25,14 +25,13 @@ import streamlit as st  # noqa: E402
 from workbench_copy import (  # noqa: E402
     DATA_DISCLAIMER,
     DECISION_PLAIN,
-    GITHUB_URL,
     GLOSSARY,
     MEASURED_OUTCOMES,
     PIPELINE_PHASES,
     STACK,
     TAGLINE,
     TITLE,
-    github_badge,
+    project_badges,
 )
 from credit_scoring.profit.cutoff_explore import (  # noqa: E402
     DEFAULT_ASIF_PATH,
@@ -176,7 +175,7 @@ def _profit_eval(yml: dict) -> dict | None:
 def _render_landing() -> None:
     st.title(TITLE)
     st.markdown(TAGLINE)
-    st.markdown(github_badge(), unsafe_allow_html=True)
+    st.markdown(project_badges(), unsafe_allow_html=True)
     st.caption(STACK)
 
     with st.expander("About this project — how it works, step by step", expanded=False):
@@ -204,7 +203,7 @@ def _render_toolbar(available: list[str]) -> tuple[str, dict]:
         st.markdown("**Scorecard dossier**")
         product = st.selectbox("Scorecard dossier", available, index=0, label_visibility="collapsed")
     with col_right:
-        st.markdown(github_badge(text="GitHub"), unsafe_allow_html=True)
+        st.markdown(project_badges(), unsafe_allow_html=True)
     bundle = _load_bundle(product)
     if not bundle:
         st.warning(

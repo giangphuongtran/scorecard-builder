@@ -5,7 +5,8 @@ a non-technical reviewer (recruiter, hiring manager, product person) opens,
 so jargon is explained inline rather than assumed.
 """
 
-GITHUB_URL = "https://github.com/<username>/credit-scoring"
+GITHUB_URL = "https://github.com/giangphuongtran/scorecard-builder"
+STREAMLIT_URL = "https://scorecard-builder-giangphuongtran.streamlit.app/"
 
 TITLE = "Credit Scoring: From Risk Score to Lending Decision"
 
@@ -40,6 +41,29 @@ def github_badge(url: str = GITHUB_URL, text: str = "View source on GitHub") -> 
         f'color:#ffffff;padding:6px 14px;border-radius:6px;font-size:14px;'
         f'font-weight:500;">{_GITHUB_SVG}{text}</div></a>'
     )
+
+
+_STREAMLIT_SVG = (
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff" '
+    'style="vertical-align:-3px;margin-right:6px;">'
+    '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l5-9v4h3l-5 9z"/>'
+    "</svg>"
+)
+
+
+def streamlit_badge(url: str = STREAMLIT_URL, text: str = "Live demo") -> str:
+    """Return an HTML button-style badge linking to the Streamlit Cloud app."""
+    return (
+        f'<a href="{url}" target="_blank" style="text-decoration:none;margin-left:8px;">'
+        f'<div style="display:inline-flex;align-items:center;background:#FF4B4B;'
+        f'color:#ffffff;padding:6px 14px;border-radius:6px;font-size:14px;'
+        f'font-weight:500;">{_STREAMLIT_SVG}{text}</div></a>'
+    )
+
+
+def project_badges() -> str:
+    """GitHub + Streamlit badge row for landing and toolbar."""
+    return github_badge() + streamlit_badge()
 
 
 # Each phase: (short title, one-line plain-English explanation)
