@@ -260,21 +260,4 @@ Extended model notes and glossary live in a private `documents/` folder (not pub
 
 ## Data disclaimer
 
-This project uses a licensed academic dataset and does not include raw source files in the repository. The code expects local inputs under `data/01_raw/`, but those files stay private. The repo is suitable for code review, architecture discussion, and interview walkthroughs, while the original data remains outside version control.
-
-## Roadmap
-
-**Done now:**
-
-- application PD scorecards for `ins` and `css`
-- behavioral feature pipeline and monthly simulation ABT
-- constrained profit cutoff optimization (library; frozen in `parameters.yml`)
-- stability diagnostics and promotion gate inputs
-- Streamlit workbench, FastAPI scoring, and MLflow instrumentation
-
-**Next:**
-
-- deploy Streamlit Cloud demo and replace placeholder URL
-- lock final monitoring thresholds after more closed-loop review
-- add behavioral PD promotion into the same reporting pattern
-- harden orchestration with Airflow only after the API and tracking flow are stable
+This project uses a licensed academic dataset and does not include raw source files in the repository. The repo is suitable for code review, architecture discussion, and interview walkthroughs, while the original data remains outside version control.
