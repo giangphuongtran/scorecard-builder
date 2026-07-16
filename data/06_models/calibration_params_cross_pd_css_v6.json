@@ -1,0 +1,6 @@
+{
+  "intercept": 16.882274408130645,
+  "coef": -0.03465735915769463,
+  "target": "default_cross12",
+  "score_col": "score"
+}
