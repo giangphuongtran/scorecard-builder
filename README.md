@@ -181,12 +181,10 @@ These figures are measured from frozen artifacts and notebooks in this repo.
 - **Calibration**
   - score-to-PD uses a saved logistic mapping: `PD = 1 / (1 + exp(-(a + b * score)))`
   - keeps the scorecard interpretable while turning points into a usable probability for policy setting
-- **Offline profit (as-if)**
+- **Offline profit**
   - frozen policy total profit: **~965,000 PLN** (`pd_css=0.50`, `pd_ins_high=0.03` on v6 models)
-  - course benchmark for comparison: **731,882 PLN**
-  - explicitly *offline / as-if*: computed on a fixed historical ABT, not from a live portfolio under the new strategy
-
-![Results — Gini comparison placeholder](docs/images/results-gini-comparison.png)
+  - Computed on a fixed historical ABT, not from a live portfolio under the new strategy
+  
 
 The current selected policy in [`conf/base/parameters.yml`](conf/base/parameters.yml) uses product-level application PD cutoffs and an extra mid-band rule for `ins`. The [Streamlit workbench](https://scorecard-workbench.streamlit.app/) displays this frozen policy; cutoff search remains available in [`credit_scoring.profit.cutoff_explore`](src/credit_scoring/profit/cutoff_explore.py) for offline analysis.
 
