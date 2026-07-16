@@ -178,7 +178,7 @@ def _render_landing() -> None:
     st.markdown(github_badge(), unsafe_allow_html=True)
 
     with st.expander("About this project — how it works, step by step", expanded=False):
-        st.markdown("**The pipeline, in plain English**")
+        st.markdown("**The pipeline**")
         for step_title, step_detail in PIPELINE_PHASES:
             st.markdown(f"**{step_title}** — {step_detail}")
 
@@ -273,7 +273,6 @@ def _render_cutoff_cards(cuts: dict) -> None:
 def _render_portfolio_metrics(ev: dict) -> None:
     st.caption(
         "Estimated profit if this policy had been applied to historical applications "
-        "(not a live, currently-running result)."
     )
     c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric(
@@ -419,20 +418,6 @@ def tab_gini_vars(bundle: dict) -> None:
     else:
         st.info("No Gini_vars_final in bundle.")
 
-    _section("Variable stability over time")
-    vr = bundle.get("variable_report") or {}
-    for feat, blocks in vr.items():
-        period = blocks.get("period") if isinstance(blocks, dict) else None
-        if not isinstance(period, pd.DataFrame) or period.empty:
-            continue
-        st.markdown(f"### {display_label(feat)}")
-        st.caption(interpret_feature(feat))
-        _show_fig(
-            fig_bin_metric_over_time(
-                period, metric="share", title=f"{display_label(feat)}: share by bin"
-            )
-        )
-
 
 def tab_profit_policy(yml: dict) -> None:
     _section("Profit & policy")
@@ -480,7 +465,7 @@ def tab_profit_policy(yml: dict) -> None:
         st.info("No accepted loans under frozen cutoffs.")
 
     st.subheader("Decline reasons")
-    st.caption("Why applications were declined under the frozen policy.")
+    st.caption("Why applications were declined under the policy.")
     reasons = ev.get("decline_reasons")
     if isinstance(reasons, pd.DataFrame) and len(reasons):
         _show_df(reasons)
