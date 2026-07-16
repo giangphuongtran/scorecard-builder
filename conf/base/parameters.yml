@@ -33,8 +33,8 @@ simulation:
   burn_in_before: "197501"
 
 binning:
-  ncategories_int: 4
-  minimum_share_int: 0.03
+  ncategories_int: 3
+  minimum_share_int: 0.20
   ncategories_nom: 4
   symbol_missing: "Missing"
   symbol_other: "<OTHERS>"
@@ -61,6 +61,78 @@ model:
   factor: 28.8539007098   # 20 / ln(2)
   offset: 487.1194695278  # 600 - factor * ln(50)
 
+# Notebook 05 / ASB tune — per-product overrides. Kedro scorecard still uses binning+model above.
+# agr*/ags* stay in the ABT (bad_customer uses agr12_Max_CMaxA_Due) but are blocked from scorecards.
+scorecard:
+  prefixes: ["app", "act"]
+  blocked: ["agr", "ags"]
+  time_col: period
+  id_col: aid
+  train_end_period: "198512"
+  valid_start_period: "198601"
+  rare_threshold: 0.05
+  symbol_missing: Missing
+  symbol_other: "<OTHERS>"
+  tree_random_state: 1234
+  woe_epsilon: 1.0e-4
+  nominal_int_threshold: 10
+  number_vars: 12
+  iv_min: 0.02
+  psi_max: 0.25
+  ar_diff_max: 0.20
+  pvalue_max: 0.05
+  vif_max: 3.0
+  pearson_max: 0.75
+  ar_diff_model_max: 0.20
+  max_features: 12
+  epsilon: 1.0e-4
+  # Bin / WOE QC (03 notebook gates)
+  max_bad_rate_swing: 0.75
+  min_bin_n_period: 5
+  min_bin_n_total: 30
+  min_static_br_gap: 0.01
+  min_period_br_gap: 0.01
+  # Soft-drop QC fails from combo search by default; override per product to false if pool empties.
+  soft_drop_qc_fails: true
+  ins:
+    target: default12
+    ncategories_int: 4
+    minimum_share_int: 0.20
+    ncategories_nom: 4
+    number_features: [5, 6, 7]
+    gini_min: 0.05
+    min_bin_n_period: 1
+    max_bad_rate_swing: 1.0
+  css:
+    target: default12
+    ncategories_int: 3
+    minimum_share_int: 0.20
+    ncategories_nom: 3
+    number_features: [5, 6, 7, 8]
+    gini_min: 0.05
+  pr:
+    target: cross_response
+    ncategories_int: 3
+    minimum_share_int: 0.12
+    ncategories_nom: 3
+    number_features: [4, 5, 6]
+    gini_min: 0.02
+  cross:
+    # Combo search empty under soft-drop; keep QC as report lens for this product.
+    soft_drop_qc_fails: false
+    target: default_cross12
+    ncategories_int: 3
+    minimum_share_int: 0.20
+    ncategories_nom: 3
+    number_features: [4, 5, 6]
+    gini_min: 0.02
+    min_bin_n_period: 1
+    min_bin_n_total: 15
+    max_bad_rate_swing: 1.0
+    min_static_br_gap: 0.001
+    min_period_br_gap: 0.001
+
+
 profit:
   window_start: "197501"
   window_end: "198712"
@@ -76,19 +148,31 @@ profit:
       apr_annual: 0.18
       provision: 0.0
   cutoffs:
-    # pd_css: 0.20823287081530759
-    pd_css: 0.9
-    pd_ins_high: 0.0053289790410611425
+    # Application PD. Mid-band requires pd_ins_low < pd <= pd_ins_high.
+    # Frozen from as-if tune (~965k PLN on v6 scored frame).
+    pd_css: 0.50
+    pd_ins_high: 0.03
+    pd_ins_low: 0.01
+    pr_min: 0.028
+    cross_pd_max: 0.2724
   bad_customer:
     enabled: true
     feature: agr12_Max_CMaxA_Due
     threshold: 3
   artifacts:
     ins:
-      package: data/06_models/pd_ins_v2.pkl
-      points: data/06_models/points_table_ins_v2.parquet
-      calib: data/06_models/calibration_params_ins_v2.json
+      package: data/06_models/pd_ins_v6.pkl
+      points: data/06_models/points_table_ins_v6.parquet
+      calib: data/06_models/calibration_params_ins_v6.json
     css:
-      package: data/06_models/pd_css_v2.pkl
-      points: data/06_models/points_table_css_v2.parquet
-      calib: data/06_models/calibration_params_css_v2.json
+      package: data/06_models/pd_css_v6.pkl
+      points: data/06_models/points_table_css_v6.parquet
+      calib: data/06_models/calibration_params_css_v6.json
+    pr:
+      package: data/06_models/pr_css_v6.pkl
+      points: data/06_models/points_table_pr_css_v6.parquet
+      calib: data/06_models/calibration_params_pr_css_v6.json
+    cross:
+      package: data/06_models/cross_pd_css_v6.pkl
+      points: data/06_models/points_table_cross_pd_css_v6.parquet
+      calib: data/06_models/calibration_params_cross_pd_css_v6.json

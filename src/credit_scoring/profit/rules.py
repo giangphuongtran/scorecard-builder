@@ -23,7 +23,13 @@ def rules_from_params(profit_params: dict) -> dict:
 def apply_strategy(scored: pd.DataFrame, rules: dict) -> pd.DataFrame:
     """Apply decision rules; first matching decline wins.
 
-    Priority: burn-in keep A -> 998 inactive css -> bad customer -> PD css -> PD ins.
+    Priority: burn-in keep A -> 998 inactive css -> bad customer -> PD css
+    -> PD ins high -> INS mid-band (PR / Cross PD) -> done.
+
+    Mid-band (Strategy 1 / st1_high style) when cutoffs provide
+    ``pd_ins_low``, and optionally ``pr_min`` / ``cross_pd_max``:
+    decline INS with ``pd_ins_low < pd <= pd_ins_high`` when
+    ``pr < pr_min`` OR ``cross_pd > cross_pd_max``.
     """
     out_cols = [
         "cid",
@@ -61,6 +67,9 @@ def apply_strategy(scored: pd.DataFrame, rules: dict) -> pd.DataFrame:
     cut = rules.get("cutoffs") or {}
     pd_css = cut.get("pd_css")
     pd_ins = cut.get("pd_ins_high")
+    pd_ins_low = cut.get("pd_ins_low")
+    pr_min = cut.get("pr_min")
+    cross_pd_max = cut.get("cross_pd_max")
 
     if pd_css is not None:
         css_cut = (
@@ -76,6 +85,26 @@ def apply_strategy(scored: pd.DataFrame, rules: dict) -> pd.DataFrame:
         decision.loc[ins_cut] = "D"
         reason.loc[ins_cut] = "2 PD cut-off on ins"
 
+    # Mid-band: keep only if PR high enough AND Cross PD low enough
+    if pd_ins is not None and pd_ins_low is not None:
+        mid = (
+            (~burn)
+            & decision.eq("A")
+            & df["product"].eq("ins")
+            & (df["pd"] <= pd_ins)
+            & (df["pd"] > pd_ins_low)
+        )
+        fail_pr = False
+        fail_cross = False
+        if pr_min is not None and "pr" in df.columns:
+            fail_pr = df["pr"].isna() | (df["pr"] < pr_min)
+        if cross_pd_max is not None and "cross_pd" in df.columns:
+            fail_cross = df["cross_pd"].isna() | (df["cross_pd"] > cross_pd_max)
+        if pr_min is not None or cross_pd_max is not None:
+            fail = mid & (fail_pr | fail_cross)
+            decision.loc[fail] = "D"
+            reason.loc[fail] = "3 PD,PDCross and PR cut-offs on ins"
+
     decision.loc[burn] = "A"
     reason.loc[burn] = "999ok"
 
@@ -90,13 +119,16 @@ def apply_strategy(scored: pd.DataFrame, rules: dict) -> pd.DataFrame:
                 "app_loan_amount",
                 "app_n_installments",
                 "pd",
+                "pr",
+                "cross_pd",
             ]
             if c in df.columns
         ]
     ].copy()
     slim["decision"] = decision.to_numpy()
     slim["decline_reason"] = reason.to_numpy()
-    return slim[out_cols]
+    keep = [c for c in out_cols if c in slim.columns]
+    return slim[keep]
 
 
 def evaluate_strategy(

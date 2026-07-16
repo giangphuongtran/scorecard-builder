@@ -7,6 +7,7 @@ import pandas as pd
 
 from credit_scoring.scorecard.scaling import score_applicants
 from credit_scoring.scorecard.woe import encode_woe
+from credit_scoring.scorecard.binning import apply_bins as apply_bins_pipeline
 
 
 def normalize_calib_params(params: dict, product: str | None = None) -> tuple[float, float]:
@@ -124,7 +125,15 @@ def score_product_slice(
     woe_maps = woe_tables_to_maps(package["woe_tables"])
     a, b = normalize_calib_params(calib, product=product)
 
-    binned = apply_bins_notebook(abt_slice, binning_maps)
+    # Notebook Gate B packages store explicit interval labels; pipeline maps use edges only.
+    needs_pipeline_bins = any(
+        spec.get("type") == "numeric" and not spec.get("intervals")
+        for spec in binning_maps.values()
+    )
+    if needs_pipeline_bins:
+        binned = apply_bins_pipeline(abt_slice, binning_maps)
+    else:
+        binned = apply_bins_notebook(abt_slice, binning_maps)
     encoded = encode_woe(binned, woe_maps)
     missing = [f for f in package["features"] if f not in encoded.columns]
     if missing:
@@ -153,15 +162,64 @@ def score_product_slice(
     return out
 
 
+def score_secondary_model(
+    abt: pd.DataFrame,
+    package: dict,
+    points_table: pd.DataFrame,
+    calib: dict,
+    *,
+    score_col: str,
+    pd_col: str,
+) -> pd.DataFrame:
+    """Score all ABT rows with a secondary model (PR or Cross PD).
+
+    Returns ``aid``, ``score_col``, ``pd_col``.
+    """
+    if abt.empty:
+        return pd.DataFrame(columns=["aid", score_col, pd_col])
+
+    product_key = package.get("product", "ins")
+    binning_maps = package["binning_maps"]
+    woe_maps = woe_tables_to_maps(package["woe_tables"])
+    a, b = normalize_calib_params(calib, product=product_key)
+
+    needs_pipeline_bins = any(
+        spec.get("type") == "numeric" and not spec.get("intervals")
+        for spec in binning_maps.values()
+    )
+    if needs_pipeline_bins:
+        binned = apply_bins_pipeline(abt, binning_maps)
+    else:
+        binned = apply_bins_notebook(abt, binning_maps)
+    encoded = encode_woe(binned, woe_maps)
+    missing = [f for f in package["features"] if f not in encoded.columns]
+    if missing:
+        raise ValueError(f"{pd_col}: missing WOE columns after encode: {missing}")
+
+    scored = score_applicants(encoded, package, points_table)
+    out = scored[["aid", "score"]].rename(columns={"score": score_col}).copy()
+    out[pd_col] = score_to_pd(out[score_col].to_numpy(), a, b)
+    return out
+
+
 def score_abt_application(
     abt: pd.DataFrame,
     packages: dict,
     points_tables: dict,
     calibrations: dict,
+    *,
+    secondary: dict | None = None,
 ) -> pd.DataFrame:
-    """Score full ABT with per-product Gate B packages; row grain = aid."""
+    """Score full ABT with per-product Gate B packages; row grain = aid.
+
+    Optional ``secondary`` dict may include ``pr`` and/or ``cross`` each with
+    ``package``, ``points``, ``calib`` to attach ``pr`` / ``cross_pd`` columns
+    on every row (SAS decision-engine style).
+    """
     frames = []
     for product in ("ins", "css"):
+        if product not in packages:
+            continue
         slice_ = abt.loc[abt["product"].eq(product)].copy()
         frames.append(
             score_product_slice(
@@ -171,7 +229,31 @@ def score_abt_application(
                 calibrations[product],
             )
         )
+    if not frames:
+        raise ValueError("no ins/css packages provided")
     out = pd.concat(frames, ignore_index=True)
     if not out["aid"].is_unique:
         raise ValueError("duplicate aid after scoring")
+
+    if secondary:
+        if "pr" in secondary:
+            pr = score_secondary_model(
+                abt,
+                secondary["pr"]["package"],
+                secondary["pr"]["points"],
+                secondary["pr"]["calib"],
+                score_col="pr_score",
+                pd_col="pr",
+            )
+            out = out.merge(pr, on="aid", how="left")
+        if "cross" in secondary:
+            cr = score_secondary_model(
+                abt,
+                secondary["cross"]["package"],
+                secondary["cross"]["points"],
+                secondary["cross"]["calib"],
+                score_col="cross_score",
+                pd_col="cross_pd",
+            )
+            out = out.merge(cr, on="aid", how="left")
     return out

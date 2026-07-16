@@ -144,25 +144,33 @@ pd_ins_v2:
   type: pickle.PickleDataset
   filepath: data/06_models/pd_ins_v2.pkl
 
-pd_css_v2:
+pd_css_v5:
   type: pickle.PickleDataset
-  filepath: data/06_models/pd_css_v2.pkl
+  filepath: data/06_models/pd_css_v5.pkl
 
 points_table_ins_v2:
   type: pandas.ParquetDataset
   filepath: data/06_models/points_table_ins_v2.parquet
 
-points_table_css_v2:
+points_table_css_v5:
   type: pandas.ParquetDataset
-  filepath: data/06_models/points_table_css_v2.parquet
+  filepath: data/06_models/points_table_css_v5.parquet
 
 calibration_params_ins_v2:
   type: json.JSONDataset
   filepath: data/06_models/calibration_params_ins_v2.json
 
-calibration_params_css_v2:
+calibration_params_css_v5:
   type: json.JSONDataset
-  filepath: data/06_models/calibration_params_css_v2.json
+  filepath: data/06_models/calibration_params_css_v5.json
+
+# Optional labeled ABT for PR / Cross training (from 05 notebook §8)
+abt_app_cross:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/abt_app_cross.parquet
+  save_args:
+    engine: pyarrow
+    index: false
 
 # --- Profit / strategy (Phase 5) ---
 decisions_strategy:
@@ -186,6 +194,14 @@ profit_summary:
 profit_report:
   type: text.TextDataset
   filepath: data/08_reporting/profit_report.html
+
+scorecard_report_ins:
+  type: text.TextDataset
+  filepath: data/08_reporting/scorecard_report_ins.html
+
+scorecard_report_css:
+  type: text.TextDataset
+  filepath: data/08_reporting/scorecard_report_css.html
 
 # --- Behavioral Scoring Stubs ---
 behavioral_abt_stub:

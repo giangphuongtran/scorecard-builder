@@ -18,6 +18,32 @@ from .rules import apply_strategy, rules_from_params
 from .scoring import score_abt_application
 
 
+def _seed_approved_tx(
+    transactions: pd.DataFrame,
+    sim_params: dict,
+    profit_params: dict,
+    start: str,
+) -> pd.DataFrame:
+    """Build the opening approved transaction pool.
+
+    ``opening_book`` (default): all loans with ``fin_period < start`` — the
+    pre-window book. Keeps ``act_cins`` / ``act_call`` histories available when
+    CSS approvals are selective. Set ``seed_mode: single`` to use only
+    ``sim_params.seed_period``.
+    """
+    mode = str(
+        profit_params.get("seed_mode")
+        or sim_params.get("seed_mode")
+        or "opening_book"
+    ).lower()
+    if mode in {"opening_book", "pre_window", "before_start"}:
+        return transactions.loc[
+            transactions["fin_period"].astype(str) < str(start)
+        ].copy()
+    seed_period = _resolve_seed_period(transactions, sim_params)
+    return transactions.loc[transactions["fin_period"] == seed_period].copy()
+
+
 def run_closed_loop_resim(
     production: pd.DataFrame,
     transactions: pd.DataFrame,
@@ -32,24 +58,42 @@ def run_closed_loop_resim(
     start_period: str | None = None,
     end_period: str | None = None,
     verbose: bool = True,
+    secondary: dict | None = None,
+    rules_override: dict | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Month-by-month sim with Gate B scoring + params:profit strategy.
 
     Features each month are built from the growing ``approved_tx`` pool
     (reject-inference feedback). Returns (abt_app with defaults, decisions).
-    """
-    rules = rules_from_params(profit_params)
-    seed_period = _resolve_seed_period(transactions, sim_params)
-    approved_tx = transactions[transactions["fin_period"] == seed_period].copy()
 
-    start = start_period or sim_params["start_period"]
-    end = end_period or sim_params["end_period"]
+    Optional ``secondary`` (``pr`` / ``cross`` bundles) attaches response and
+    Cross PD scores so mid-band rules can fire inside ``apply_strategy``.
+    """
+    rules = rules_override if rules_override is not None else rules_from_params(profit_params)
+    start = start_period or profit_params.get("window_start") or sim_params["start_period"]
+    end = end_period or profit_params.get("window_end") or sim_params["end_period"]
+    approved_tx = _seed_approved_tx(transactions, sim_params, profit_params, start)
 
     all_periods = sorted(production["period"].unique())
     target_periods = [p for p in all_periods if start <= p <= end]
 
     all_abt = []
     all_decisions = []
+
+    # Split application PD vs secondary artifacts
+    app_packages = {k: packages[k] for k in ("ins", "css") if k in packages}
+    app_points = {k: points_tables[k] for k in ("ins", "css") if k in points_tables}
+    app_cals = {k: calibrations[k] for k in ("ins", "css") if k in calibrations}
+
+    if secondary is None:
+        secondary = {}
+        for key, col_map in (("pr", None), ("cross", None)):
+            if key in packages:
+                secondary[key] = {
+                    "package": packages[key],
+                    "points": points_tables[key],
+                    "calib": calibrations[key],
+                }
 
     for proc_period in target_periods:
         proc_period1 = derive_proc_period1(proc_period)
@@ -74,13 +118,18 @@ def run_closed_loop_resim(
             proc_period,
         )
 
-        scored = score_abt_application(abt_month, packages, points_tables, calibrations)
-        # Strategy needs full feature cols (act_cus_active, bad feature) from ABT
-        strategy_in = abt_month.merge(
-            scored[["aid", "score", "pd"]],
-            on="aid",
-            how="left",
+        scored = score_abt_application(
+            abt_month,
+            app_packages,
+            app_points,
+            app_cals,
+            secondary=secondary or None,
         )
+        merge_cols = ["aid", "score", "pd"]
+        for c in ("pr", "cross_pd", "pr_score", "cross_score"):
+            if c in scored.columns:
+                merge_cols.append(c)
+        strategy_in = abt_month.merge(scored[merge_cols], on="aid", how="left")
         decisions_month = apply_strategy(strategy_in, rules)
 
         approved_tx = append_approved_to_pool(

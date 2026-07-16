@@ -201,3 +201,30 @@ def test_normalize_calib_nested_product():
     assert a == 1.0 and b == -0.02
     a2, b2 = normalize_calib_params({"a": 2.0, "b": -0.01})
     assert a2 == 2.0 and b2 == -0.01
+
+
+def test_find_cutoff_at_ar_and_min_ar():
+    from credit_scoring.profit.cutoff import (
+        find_cutoff_at_ar,
+        find_optimal_cutoff,
+        profit_curve_by_pd,
+    )
+
+    df = pd.DataFrame(
+        {
+            "aid": [f"a{i}" for i in range(10)],
+            "product": ["css"] * 10,
+            "pd": [0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.20, 0.30, 0.40, 0.50],
+            "profit": [10, 10, 10, 5, 5, -2, -20, -30, -40, -50],
+            "default12": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+        }
+    )
+    curve = profit_curve_by_pd(df, "css")
+    unconstrained = find_optimal_cutoff(curve)
+    assert unconstrained["pd_cutoff"] == 0.05
+    at_ar = find_cutoff_at_ar(curve, 0.5)
+    assert at_ar["reachable"] is True
+    assert at_ar["ar_at_peak"] >= 0.5
+    constrained = find_optimal_cutoff(curve, min_ar=0.5)
+    assert constrained["ar_at_peak"] >= 0.5
+    assert constrained["peak_profit"] <= unconstrained["peak_profit"]
