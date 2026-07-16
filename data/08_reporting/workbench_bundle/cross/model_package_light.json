@@ -1,0 +1,48 @@
+{
+  "product": "cross",
+  "target": "default_cross12",
+  "features": [
+    "act_age_WOE",
+    "act_call_cc_WOE",
+    "act_call_n_loan_WOE",
+    "act_ccss_cc_WOE",
+    "act_ccss_dueutl_WOE",
+    "act_ccss_maxdue_WOE"
+  ],
+  "metrics": {
+    "gini_train": 0.6140926595868832,
+    "gini_valid": 0.6037019458946369,
+    "ar_diff": 0.010390713692246312,
+    "pvalues": {
+      "act_age_WOE": 1.0077904695737612e-20,
+      "act_call_cc_WOE": 1.4224844331591737e-06,
+      "act_call_n_loan_WOE": 0.11982881759854208,
+      "act_ccss_cc_WOE": 0.0001930356075480808,
+      "act_ccss_dueutl_WOE": 2.9258976730176366e-05,
+      "act_ccss_maxdue_WOE": 0.004062131486048422
+    },
+    "max_pvalue": 0.11982881759854208,
+    "vif": {
+      "act_age_WOE": 1.1180068879569565,
+      "act_call_cc_WOE": 2.377477441734666,
+      "act_call_n_loan_WOE": 4.5703083656806305,
+      "act_ccss_cc_WOE": 6.042563027707709,
+      "act_ccss_dueutl_WOE": 24.06176172351729,
+      "act_ccss_maxdue_WOE": 27.101989995358583
+    },
+    "max_vif": 27.101989995358583,
+    "pearson_corr": "                     act_age_WOE  ...  act_ccss_maxdue_WOE\nact_age_WOE             1.000000  ...            -0.093906\nact_call_cc_WOE        -0.257313  ...             0.668968\nact_call_n_loan_WOE    -0.109509  ...             0.847204\nact_ccss_cc_WOE        -0.184467  ...             0.890775\nact_ccss_dueutl_WOE    -0.093711  ...             0.978733\nact_ccss_maxdue_WOE    -0.093906  ...             1.000000\n\n[6 rows x 6 columns]",
+    "max_pearson_offdiag": 0.9787328415956785,
+    "beta_signs": {
+      "act_age_WOE": "negative",
+      "act_call_cc_WOE": "negative",
+      "act_call_n_loan_WOE": "negative",
+      "act_ccss_cc_WOE": "negative",
+      "act_ccss_dueutl_WOE": "negative",
+      "act_ccss_maxdue_WOE": "positive"
+    },
+    "n_negative_betas": 5,
+    "n_features": 6,
+    "nnegative_betas": 5
+  }
+}

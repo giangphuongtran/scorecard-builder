@@ -1,0 +1,8 @@
+{
+  "ins": {
+    "intercept": 16.8822744081298,
+    "coef": -0.034657359157693024,
+    "target": "default12",
+    "score_col": "score"
+  }
+}

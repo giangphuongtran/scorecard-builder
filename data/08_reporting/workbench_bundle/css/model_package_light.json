@@ -1,0 +1,44 @@
+{
+  "product": "css",
+  "target": "default12",
+  "features": [
+    "act_ccss_n_loan_WOE",
+    "act_ccss_utl_WOE",
+    "act_ccss_cc_WOE",
+    "act_call_n_loan_WOE",
+    "act_cins_min_pninst_WOE"
+  ],
+  "metrics": {
+    "gini_train": 0.5403818350163399,
+    "gini_valid": 0.5280995551397385,
+    "ar_diff": 0.012282279876601354,
+    "pvalues": {
+      "act_ccss_n_loan_WOE": 1.862910540389385e-39,
+      "act_ccss_utl_WOE": 7.141462345953379e-118,
+      "act_ccss_cc_WOE": 0.04254175386340354,
+      "act_call_n_loan_WOE": 9.41975343498609e-11,
+      "act_cins_min_pninst_WOE": 0.006557329776955339
+    },
+    "max_pvalue": 0.04254175386340354,
+    "vif": {
+      "act_ccss_n_loan_WOE": 2.770492396684805,
+      "act_ccss_utl_WOE": 2.236070953706587,
+      "act_ccss_cc_WOE": 2.010371553391589,
+      "act_call_n_loan_WOE": 2.0301956544652926,
+      "act_cins_min_pninst_WOE": 1.3675314126515488
+    },
+    "max_vif": 2.770492396684805,
+    "pearson_corr": "                         act_ccss_n_loan_WOE  ...  act_cins_min_pninst_WOE\nact_ccss_n_loan_WOE                 1.000000  ...                 0.389650\nact_ccss_utl_WOE                    0.649027  ...                 0.427039\nact_ccss_cc_WOE                     0.556827  ...                 0.490219\nact_call_n_loan_WOE                 0.710300  ...                 0.260941\nact_cins_min_pninst_WOE             0.389650  ...                 1.000000\n\n[5 rows x 5 columns]",
+    "max_pearson_offdiag": 0.710299733030417,
+    "beta_signs": {
+      "act_ccss_n_loan_WOE": "negative",
+      "act_ccss_utl_WOE": "negative",
+      "act_ccss_cc_WOE": "negative",
+      "act_call_n_loan_WOE": "negative",
+      "act_cins_min_pninst_WOE": "negative"
+    },
+    "n_negative_betas": 5,
+    "n_features": 5,
+    "nnegative_betas": 5
+  }
+}

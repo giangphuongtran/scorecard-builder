@@ -1,0 +1,48 @@
+{
+  "product": "pr",
+  "target": "cross_response",
+  "features": [
+    "app_char_job_code_WOE",
+    "act_age_WOE",
+    "app_income_WOE",
+    "app_n_installments_WOE",
+    "act_cins_n_loans_hist_WOE",
+    "act_call_cc_WOE"
+  ],
+  "metrics": {
+    "gini_train": 0.82944940574214,
+    "gini_valid": 0.7853173633805421,
+    "ar_diff": 0.044132042361597845,
+    "pvalues": {
+      "app_char_job_code_WOE": 0.004646065349895451,
+      "act_age_WOE": 7.588282646293449e-13,
+      "app_income_WOE": 0.0001899830727728648,
+      "app_n_installments_WOE": 1.1748483137021422e-17,
+      "act_cins_n_loans_hist_WOE": 0.0,
+      "act_call_cc_WOE": 3.20742791169705e-23
+    },
+    "max_pvalue": 0.004646065349895451,
+    "vif": {
+      "app_char_job_code_WOE": 2.7557892037358767,
+      "act_age_WOE": 1.6162218586956878,
+      "app_income_WOE": 2.075846236823753,
+      "app_n_installments_WOE": 1.0004694954212883,
+      "act_cins_n_loans_hist_WOE": 1.169069758473468,
+      "act_call_cc_WOE": 1.4614469971241164
+    },
+    "max_vif": 2.7557892037358767,
+    "pearson_corr": "                           app_char_job_code_WOE  ...  act_call_cc_WOE\napp_char_job_code_WOE                   1.000000  ...         0.501336\nact_age_WOE                             0.589550  ...         0.344540\napp_income_WOE                          0.710084  ...         0.450356\napp_n_installments_WOE                 -0.006899  ...         0.001301\nact_cins_n_loans_hist_WOE               0.211796  ...         0.315012\nact_call_cc_WOE                         0.501336  ...         1.000000\n\n[6 rows x 6 columns]",
+    "max_pearson_offdiag": 0.7100838525425974,
+    "beta_signs": {
+      "app_char_job_code_WOE": "positive",
+      "act_age_WOE": "positive",
+      "app_income_WOE": "negative",
+      "app_n_installments_WOE": "negative",
+      "act_cins_n_loans_hist_WOE": "negative",
+      "act_call_cc_WOE": "negative"
+    },
+    "n_negative_betas": 4,
+    "n_features": 6,
+    "nnegative_betas": 4
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "params": {
+    "a": 16.882274408130908,
+    "b": -0.03465735915769518,
+    "target": "default12",
+    "score_col": "score"
+  },
+  "diagnostics": {
+    "auc_before": 0.22980908249183005,
+    "auc_after": 0.7701909175081699,
+    "brier_before": 0.5532813142796656,
+    "brier_after": 0.1700201483101932,
+    "mean_pd_predicted": 0.694855271497993,
+    "mean_pd_actual": 0.6948552714979929
+  }
+}

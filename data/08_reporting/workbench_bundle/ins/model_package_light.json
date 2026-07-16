@@ -1,0 +1,52 @@
+{
+  "product": "ins",
+  "target": "default12",
+  "features": [
+    "app_number_of_children_WOE",
+    "app_char_marital_status_WOE",
+    "app_char_job_code_WOE",
+    "act_age_WOE",
+    "act_cins_n_statB_WOE",
+    "app_income_WOE",
+    "act_cins_n_loans_act_WOE"
+  ],
+  "metrics": {
+    "gini_train": 0.6304283405518112,
+    "gini_valid": 0.7546080472047896,
+    "ar_diff": 0.1241797066529784,
+    "pvalues": {
+      "app_number_of_children_WOE": 8.088635419042167e-111,
+      "app_char_marital_status_WOE": 4.988865615624593e-55,
+      "app_char_job_code_WOE": 5.574689999599029e-152,
+      "act_age_WOE": 1.1711669520456223e-96,
+      "act_cins_n_statB_WOE": 3.0887877027870624e-38,
+      "app_income_WOE": 6.04853985060587e-58,
+      "act_cins_n_loans_act_WOE": 1.2213338900488379e-253
+    },
+    "max_pvalue": 3.0887877027870624e-38,
+    "vif": {
+      "app_number_of_children_WOE": 1.22720260788431,
+      "app_char_marital_status_WOE": 1.0367976854010637,
+      "app_char_job_code_WOE": 1.0673589301051347,
+      "act_age_WOE": 1.3798391586458962,
+      "act_cins_n_statB_WOE": 1.0467558308222382,
+      "app_income_WOE": 1.134929263701476,
+      "act_cins_n_loans_act_WOE": 1.0365034993797209
+    },
+    "max_vif": 1.3798391586458962,
+    "pearson_corr": "                             app_number_of_children_WOE  ...  act_cins_n_loans_act_WOE\napp_number_of_children_WOE                     1.000000  ...                  0.046055\napp_char_marital_status_WOE                    0.165418  ...                  0.005296\napp_char_job_code_WOE                         -0.073932  ...                 -0.014848\nact_age_WOE                                   -0.391050  ...                 -0.095958\nact_cins_n_statB_WOE                           0.100304  ...                  0.169215\napp_income_WOE                                 0.130161  ...                  0.027059\nact_cins_n_loans_act_WOE                       0.046055  ...                  1.000000\n\n[7 rows x 7 columns]",
+    "max_pearson_offdiag": 0.3910502594979291,
+    "beta_signs": {
+      "app_number_of_children_WOE": "negative",
+      "app_char_marital_status_WOE": "negative",
+      "app_char_job_code_WOE": "negative",
+      "act_age_WOE": "negative",
+      "act_cins_n_statB_WOE": "negative",
+      "app_income_WOE": "negative",
+      "act_cins_n_loans_act_WOE": "negative"
+    },
+    "n_negative_betas": 7,
+    "n_features": 7,
+    "nnegative_betas": 7
+  }
+}
