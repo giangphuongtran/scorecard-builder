@@ -132,8 +132,20 @@ SECTION_HINTS: dict[str, str] = {
         "each band."
     ),
     "Profit & policy": (
-        "Estimated profit if this approval policy had been applied to historical applications "
-        "(not a live, currently-running result)."
+        "Estimated profit if this CLTV approval policy had been applied to historical applications "
+        "(offline replay — not a live, currently-running result)."
+    ),
+    "CLTV approval policy": (
+        "Production policy: auto-approve safe installment applicants, decline high-risk ones, and in the "
+        "grey zone keep only those with enough cross-sell propensity and low enough cross-product risk."
+    ),
+    "How we built the scorecard": (
+        "Six stages from candidate variables to calibrated points: binning, WOE, screening, selection, "
+        "logistic PD, then scorecard points."
+    ),
+    "Policy experiments (A/B)": (
+        "Offline champion vs challenger cutoff comparison on the same historical scored frame, "
+        "logged to MLflow experiment credit_scoring."
     ),
     "Profit strategy": (
         "Estimated profit if this approval policy had been applied to historical applications."
@@ -144,6 +156,12 @@ SECTION_HINTS: dict[str, str] = {
     ),
     "Officer tool": "Score one application by hand using the same models and policy as the rest of this report.",
     "Profit": MIDBAND_STRATEGY_BLURB,
+    "Candidates": "What variables we could use before screening and selection.",
+    "Binning": "How each input is grouped into readable risk bands.",
+    "WOE encoding": "Safer bands get higher Weight of Evidence; riskier bands get lower.",
+    "Screening": "Why variables were dropped (weak IV/Gini, unstable PSI, or correlated).",
+    "Final model": "What survived selection and how each input contributes.",
+    "Scorecard points": "Points per band plus the calibration that turns score into PD.",
 }
 
 

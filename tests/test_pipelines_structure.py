@@ -86,6 +86,10 @@ def test_profit_pipeline_exposes_three_nodes():
         "report_profit_node",
     ]
     by_name = {node.name: node for node in pipeline.nodes}
+    assert list(by_name["score_application_abt_node"].inputs) == [
+        "abt_app_cross",
+        "params:profit",
+    ]
     assert list(by_name["apply_strategy_node"].outputs) == ["decisions_strategy"]
     assert list(by_name["report_profit_node"].outputs) == [
         "profit_by_loan",

@@ -176,3 +176,29 @@ profit:
       package: data/06_models/cross_pd_css_v6.pkl
       points: data/06_models/points_table_cross_pd_css_v6.parquet
       calib: data/06_models/calibration_params_cross_pd_css_v6.json
+
+# MLflow is on by default; set MLFLOW_ENABLE=0 to disable.
+mlflow:
+  enabled: true
+  tracking_uri: sqlite:///mlruns.db
+  experiment_name: credit_scoring
+
+# Offline champion vs challenger on the frozen as-if scored frame.
+ab_test:
+  reference: 731882
+  champion:
+    name: cltv_production
+    cutoffs:
+      pd_css: 0.50
+      pd_ins_high: 0.03
+      pd_ins_low: 0.01
+      pr_min: 0.028
+      cross_pd_max: 0.2724
+  challenger:
+    name: looser_css
+    cutoffs:
+      pd_css: 0.55
+      pd_ins_high: 0.03
+      pd_ins_low: 0.01
+      pr_min: 0.028
+      cross_pd_max: 0.2724

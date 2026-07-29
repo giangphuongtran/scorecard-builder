@@ -88,20 +88,20 @@ PIPELINE_PHASES = [
         "statistical model that turns those bands into a risk score.",
     ),
     (
-        "5. Design the approval policy",
-        "Convert the risk score into a probability of default, then choose "
-        "cutoffs that balance approving enough loans against losing money on "
-        "defaults.",
+        "5. CLTV approval policy",
+        "Convert scores to default probabilities, then approve marginal "
+        "installment applicants only when cross-sell propensity and "
+        "cross-product risk pass thresholds (lifetime-value style mid-band).",
     ),
     (
-        "6. Report the results",
-        "This dashboard: how good the model is, what the policy decides, and a "
-        "tool to test one application at a time.",
+        "6. Measure profit & run A/B",
+        "Replay the policy on historical applications, compare offline profit "
+        "to a published benchmark, and pit champion vs challenger cutoffs.",
     ),
     (
-        "7. Serve it live",
-        "A small API other systems could call to get a live score and "
-        "decision, plus experiment tracking.",
+        "7. Report and serve",
+        "This dashboard: how we built the scorecard, what the policy decides, "
+        "an officer tool for one application, plus a scoring API and MLflow.",
     ),
 ]
 
@@ -117,17 +117,26 @@ MEASURED_OUTCOMES = [
         "Gini score for the second, harder-to-predict loan type.",
     ),
     (
-        "Profit if this policy had been used historically",
+        "Offline CLTV policy profit (historical replay)",
         "≈ 965,000 PLN",
-        "Estimated by replaying the policy on 1975–1987 data — not a live result, see note below.",
+        "Estimated by replaying the frozen CLTV policy on 1975–1987 data — not a live result.",
+    ),
+    (
+        "Vs published benchmark",
+        "+≈ 233,000 PLN",
+        "Offline delta vs published benchmark profit of 731,882 PLN — same historical replay caveat.",
     ),
 ]
 
 DATA_DISCLAIMER = (
     "The data behind this project is a licensed academic dataset and is not "
     "included in the code repository. Every profit figure shown here is an "
-    "**estimate computed on historical data, after the fact** — think of it as "
-    "\"what would have happened,\" not proof of an ongoing, live result."
+    "**offline historical replay** — \"what would have happened\" if this policy "
+    "had been applied to past applications. That is different from a "
+    "**closed-loop** simulation (where approvals change the future portfolio). "
+    "Neither is a live, currently-running portfolio result. The "
+    "**published benchmark** (731,882 PLN) is a reference strategy profit used "
+    "for comparison only."
 )
 
 STACK = "Python · pandas · scikit-learn · statsmodels · Kedro · Streamlit · FastAPI · MLflow"
@@ -144,9 +153,13 @@ GLOSSARY = {
     "Calibration": "The step that converts the raw score into an actual probability, so \"5%\" really does mean roughly a 1-in-20 chance of default.",
     "Cutoff / threshold": "The risk level at which the policy switches from approving to declining an application.",
     "Mid-band": "A grey-zone risk range where the applicant is neither a clear approve nor a clear decline, so extra checks decide the outcome.",
+    "CLTV (customer lifetime value policy)": "Production approval rule: for installment applicants in the grey zone, approve only when cross-sell propensity is high enough and cross-product default risk is low enough.",
+    "Cross-sell propensity (PR)": "Estimated chance the installment applicant would also take (or be offered) a cash/card product — used in the mid-band keep/decline rule.",
+    "Cross-product PD": "Estimated default risk if the customer also held the other product lane — a safety check before approving grey-zone installment loans.",
     "Acceptance rate": "The share of applications that get approved under the policy.",
     "Bad rate": "Among approved loans, the share that actually end up defaulting.",
     "As-if / offline profit": "Profit calculated by replaying the policy over historical data. It shows what the policy would have earned, not a live, currently-running result.",
+    "Published benchmark": "A reference strategy profit figure (731,882 PLN) used only for comparison — not a live book result.",
     "Stability": "Whether a variable behaves consistently over time. Unstable variables are excluded so the scorecard doesn't lean on something that stops working.",
 }
 

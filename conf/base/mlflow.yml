@@ -1,0 +1,5 @@
+# MLflow defaults (also mirrored under params:mlflow in parameters.yml).
+# Env override: MLFLOW_ENABLE=0 disables logging.
+enabled: true
+tracking_uri: sqlite:///mlruns.db
+experiment_name: credit_scoring

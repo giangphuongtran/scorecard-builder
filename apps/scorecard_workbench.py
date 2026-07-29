@@ -45,6 +45,11 @@ from credit_scoring.profit.cutoff_explore import (
 from credit_scoring.profit.pnl import installment_amount
 from credit_scoring.profit.rules import apply_strategy, rules_from_params
 from credit_scoring.profit.scoring import score_abt_application
+from credit_scoring.profit.tradeoffs import (
+    compare_to_benchmark,
+    midband_funnel,
+    policy_sensitivity,
+)
 from credit_scoring.scorecard.big_scorecard import _bin_condition
 from credit_scoring.scorecard.feature_labels import (
     display_label,
@@ -392,8 +397,10 @@ def tab_gini_vars(bundle: dict) -> None:
 
 
 def tab_profit_policy(yml: dict) -> None:
-    _section("Profit & policy")
+    _section("CLTV approval policy")
+    profit = yml.get("profit") or {}
     cuts = _frozen_cutoffs(yml)
+    reference = float(profit.get("reference", 731882))
 
     _render_policy_flow()
     st.divider()
@@ -426,8 +433,66 @@ def tab_profit_policy(yml: dict) -> None:
         st.error("Mid-band empty: pd_ins_high must be greater than pd_ins_low in parameters.yml.")
 
     st.divider()
+    st.markdown("**Business impact**")
+    bench = compare_to_benchmark(ev, reference)
+    b1, b2, b3 = st.columns(3)
+    b1.metric("Frozen CLTV profit", _fmt_money(bench["total_profit"]))
+    b2.metric("Published benchmark", _fmt_money(bench["reference_profit"]))
+    b3.metric("Delta vs benchmark", _fmt_money(bench["delta_profit"]))
+    st.caption(bench["note"])
+
     st.markdown("**Portfolio impact**")
     _render_portfolio_metrics(ev)
+
+    asif, _ = _load_asif()
+    if asif is not None and len(asif):
+        st.subheader("Sensitivity (what if we move one cutoff?)")
+        st.caption(
+            "Change one threshold and see approvals, defaults among accepts, and profit move. "
+            "Still an offline historical replay."
+        )
+        sens_param = st.selectbox(
+            "Cutoff to stress",
+            options=["pd_ins_high", "pd_css"],
+            format_func=lambda k: CUTOFF_DISPLAY.get(k, (k, ""))[0],
+        )
+        delta = st.slider(
+            "Absolute shift on selected cutoff",
+            min_value=-0.05,
+            max_value=0.05,
+            value=0.0,
+            step=0.005,
+            format="%.3f",
+        )
+        sens = policy_sensitivity(
+            asif,
+            cuts,
+            sens_param,
+            [0.0, float(delta)],
+            window_start=profit.get("window_start", "197501"),
+            window_end=profit.get("window_end", "198712"),
+            burn_in_before=profit.get("burn_in_before", "197501"),
+            economics=profit.get("economics") or {},
+            bad_customer=profit.get("bad_customer") or {},
+        )
+        if len(sens) >= 2:
+            base, alt = sens.iloc[0], sens.iloc[1]
+            s1, s2, s3 = st.columns(3)
+            s1.metric("Δ approvals", f"{int(alt['delta_n_accept']):+,}")
+            s2.metric("Δ defaults among accepts", f"{int(alt['n_bad'] - base['n_bad']):+,}")
+            s3.metric("Δ profit", _fmt_money(alt["delta_profit"]))
+            _show_df(sens)
+
+        st.subheader("INS mid-band funnel (CLTV)")
+        funnel = midband_funnel(
+            asif,
+            cuts,
+            window_start=profit.get("window_start", "197501"),
+            window_end=profit.get("window_end", "198712"),
+            burn_in_before=profit.get("burn_in_before", "197501"),
+            bad_customer=profit.get("bad_customer") or {},
+        )
+        _show_df(funnel)
 
     _section("By product")
     bp = ev.get("by_product")
@@ -447,7 +512,8 @@ def tab_profit_policy(yml: dict) -> None:
         "Single-product PD-only curves — cumulative profit if you ranked by PD alone. "
         "Does not include mid-band, bad-customer, or inactive-CSS rules."
     )
-    asif, _ = _load_asif()
+    if asif is None:
+        asif, _ = _load_asif()
     curves = u_curves_by_product(asif)
     pd_ins_high = float(cuts.get("pd_ins_high", 0.0))
     pd_css = float(cuts.get("pd_css", 0.0))
@@ -479,6 +545,145 @@ def tab_profit_policy(yml: dict) -> None:
         for prod, curve in curves.items():
             if curve is not None and len(curve):
                 st.line_chart(curve.set_index("pd")["profit_cum"], height=280)
+
+
+def tab_how_we_built(bundle: dict, product: str) -> None:
+    _section("How we built the scorecard")
+    if not bundle:
+        st.info("Select a product with a saved workbench bundle to walk through the build stages.")
+        return
+
+    st.caption(
+        f"Product: **{PRODUCT_NAMES.get(product, product)}**. "
+        "Six stages from candidates to calibrated points."
+    )
+
+    pkg = bundle.get("model_package") or {}
+    feats = _raw_features(bundle)
+    big = bundle.get("big_scorecard")
+    effects = bundle.get("effects")
+    points = bundle.get("points_table")
+    qc = bundle.get("qc_table")
+    model_report = bundle.get("model_report") or {}
+    cal = bundle.get("calibration") or {}
+
+    _section("Candidates")
+    if feats:
+        _show_df(variables_table_frame(feats))
+    else:
+        st.info("No final feature list in this bundle.")
+
+    _section("Binning")
+    if isinstance(big, pd.DataFrame) and len(big):
+        pts = points if isinstance(points, pd.DataFrame) else pd.DataFrame()
+        split = splitting_points_display(big, pts, feats)
+        _show_df(split.head(40) if len(split) > 40 else split)
+    else:
+        st.info("Binning table not in bundle.")
+
+    _section("WOE encoding")
+    if isinstance(big, pd.DataFrame) and "woe" in big.columns:
+        woe_cols = [c for c in ("variable", "bin", "condition", "woe", "n_train", "bad_rate_train") if c in big.columns]
+        _show_df(big[woe_cols].head(40) if woe_cols else big.head(40))
+        st.caption("Safer bins → higher WOE; riskier bins → lower WOE.")
+    else:
+        st.info("WOE column not available in big_scorecard.")
+
+    _section("Screening")
+    if isinstance(qc, pd.DataFrame) and len(qc):
+        _show_df(qc.head(30))
+        st.caption("QC / stability lens used when deciding what could enter selection.")
+    else:
+        st.info("Screening / QC table not in this bundle (often kept as a notebook artifact).")
+
+    _section("Final model")
+    if isinstance(effects, pd.DataFrame) and len(effects):
+        _show_df(effects)
+    imp = model_report.get("Variable importance")
+    if isinstance(imp, pd.DataFrame) and len(imp):
+        st.markdown("**Variable importance**")
+        _show_df(imp)
+        _show_fig(fig_variable_importance(imp))
+    elif isinstance(points, pd.DataFrame) and len(points):
+        from credit_scoring.scorecard.reports import variable_importance_from_points
+
+        imp2 = variable_importance_from_points(points)
+        _show_df(imp2)
+        _show_fig(fig_variable_importance(imp2))
+
+    _section("Scorecard points")
+    if isinstance(points, pd.DataFrame) and len(points):
+        _show_df(points)
+    params = (cal.get("params") if isinstance(cal, dict) else None) or {}
+    if params:
+        st.markdown("**Calibration (score → PD)**")
+        st.json(params)
+    metrics = pkg.get("metrics") or {}
+    if metrics:
+        st.markdown("**Held-out metrics**")
+        st.json(metrics)
+
+
+def tab_policy_experiments(yml: dict) -> None:
+    _section("Policy experiments (A/B)")
+    path = ROOT / "data" / "08_reporting" / "ab_test_summary.json"
+    if not path.exists():
+        st.warning(
+            f"Missing `{path.relative_to(ROOT)}`. "
+            "Run `uv run kedro run --pipeline=ab_test` to compare champion vs challenger."
+        )
+        ab = yml.get("ab_test") or {}
+        if ab:
+            st.caption("Configured variants in parameters.yml:")
+            st.json(
+                {
+                    "champion": ab.get("champion"),
+                    "challenger": ab.get("challenger"),
+                    "reference": ab.get("reference"),
+                }
+            )
+        return
+
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    champ = summary.get("champion") or {}
+    chall = summary.get("challenger") or {}
+    delta = summary.get("delta") or {}
+    st.caption(summary.get("note") or "Offline champion vs challenger comparison.")
+    st.info(f"Winner: **{summary.get('winner', 'n/a')}** · Logged to MLflow experiment `credit_scoring`")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f"**Champion — {champ.get('name', 'champion')}**")
+        m = champ.get("metrics") or {}
+        st.metric("Profit", _fmt_money(m.get("total_profit")))
+        st.metric("Accepts", f"{int(m.get('n_accept') or 0):,}")
+        st.metric("AR INS / CSS", f"{_fmt_pct(m.get('ar_ins'))} / {_fmt_pct(m.get('ar_css'))}")
+        st.metric(
+            "Bad rate INS / CSS",
+            f"{_fmt_pct(m.get('bad_rate_ins'))} / {_fmt_pct(m.get('bad_rate_css'))}",
+        )
+    with c2:
+        st.markdown(f"**Challenger — {chall.get('name', 'challenger')}**")
+        m = chall.get("metrics") or {}
+        st.metric("Profit", _fmt_money(m.get("total_profit")))
+        st.metric("Accepts", f"{int(m.get('n_accept') or 0):,}")
+        st.metric("AR INS / CSS", f"{_fmt_pct(m.get('ar_ins'))} / {_fmt_pct(m.get('ar_css'))}")
+        st.metric(
+            "Bad rate INS / CSS",
+            f"{_fmt_pct(m.get('bad_rate_ins'))} / {_fmt_pct(m.get('bad_rate_css'))}",
+        )
+
+    st.subheader("Challenger vs champion")
+    _show_df(pd.DataFrame([{"metric": k, "delta": v} for k, v in delta.items()]))
+
+    st.subheader("Decline-reason mix")
+    d1, d2 = st.columns(2)
+    with d1:
+        st.caption("Champion")
+        _show_df(pd.DataFrame(champ.get("decline_reasons") or []))
+    with d2:
+        st.caption("Challenger")
+        _show_df(pd.DataFrame(chall.get("decline_reasons") or []))
 
 
 @lru_cache(maxsize=32)
@@ -820,22 +1025,28 @@ def main() -> None:
 
     tabs = st.tabs(
         [
+            "Profit & CLTV policy",
+            "Policy experiments (A/B)",
+            "How we built the scorecard",
             "Model quality",
             "Stability over time",
-            "Profit & policy",
             "Officer tool",
         ]
     )
     with tabs[0]:
+        tab_profit_policy(yml)
+    with tabs[1]:
+        tab_policy_experiments(yml)
+    with tabs[2]:
+        tab_how_we_built(bundle, _product)
+    with tabs[3]:
         tab_model(bundle)
         tab_calibration(bundle)
-    with tabs[1]:
+    with tabs[4]:
         tab_model_variables(bundle)
         tab_gini_vars(bundle)
         tab_splitting(bundle)
-    with tabs[2]:
-        tab_profit_policy(yml)
-    with tabs[3]:
+    with tabs[5]:
         tab_officer_tool(yml)
 
 

@@ -1,4 +1,4 @@
-"""Kedro profit pipeline (offline St_yours evaluation)."""
+"""Kedro profit pipeline (offline CLTV production policy evaluation)."""
 
 from __future__ import annotations
 
@@ -12,15 +12,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         [
             node(
                 func=score_application_abt_node,
-                inputs=[
-                    "abt_app",
-                    "pd_ins_v2",
-                    "pd_css_v5",
-                    "points_table_ins_v2",
-                    "points_table_css_v5",
-                    "calibration_params_ins_v2",
-                    "calibration_params_css_v5",
-                ],
+                inputs=["abt_app_cross", "params:profit"],
                 outputs="scored_abt_profit",
                 name="score_application_abt_node",
             ),

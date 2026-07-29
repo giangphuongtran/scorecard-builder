@@ -3,10 +3,10 @@ from the Kedro defaults. For further information, including these default values
 https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration"""
 
 # Instantiated project hooks.
-# For example, after creating a hooks.py and defining a ProjectHooks class there, do
-# from credit_scoring.hooks import ProjectHooks
 # Hooks are executed in a Last-In-First-Out (LIFO) order.
-# HOOKS = (ProjectHooks(),)
+from credit_scoring.hooks import ProjectHooks
+
+HOOKS = (ProjectHooks(),)
 
 # Installed plugins for which to disable hook auto-registration.
 # DISABLE_HOOKS_FOR_PLUGINS = ("kedro-viz",)
@@ -35,10 +35,9 @@ https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration""
 CONFIG_LOADER_ARGS = {
     "base_env": "base",
     "default_run_env": "local",
-    # "config_patterns": {
-    #     "spark" : ["spark*/"],
-    #     "parameters": ["parameters*", "parameters*/**", "**/parameters*"],
-    # }
+    "config_patterns": {
+        "mlflow": ["mlflow*", "mlflow*/**", "**/mlflow*"],
+    },
 }
 
 # Class that manages Kedro's library components.

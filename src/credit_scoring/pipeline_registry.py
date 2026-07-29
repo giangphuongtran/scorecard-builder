@@ -9,6 +9,7 @@ from .pipelines.behavioral.pipeline import create_pipeline as create_behavioral_
 from .pipelines.simulation.pipeline import create_pipeline as create_simulation_pl
 from .pipelines.scorecard.pipeline import create_pipeline as create_scorecard_pl
 from .pipelines.profit.pipeline import create_pipeline as create_profit_pl
+from .pipelines.ab_test.pipeline import create_pipeline as create_ab_test_pl
 
 def register_pipelines() -> Dict[str, Pipeline]:
     """Register the project's pipelines."""
@@ -19,6 +20,7 @@ def register_pipelines() -> Dict[str, Pipeline]:
     simulation_pipeline = create_simulation_pl()
     scorecard_pipeline = create_scorecard_pl()
     profit_pipeline = create_profit_pl()
+    ab_test_pipeline = create_ab_test_pl()
 
     # The simulation pipeline rebuilds behavioral features from the approved pool.
     # Keep the standalone behavioral export runnable, but exclude it from the
@@ -33,4 +35,5 @@ def register_pipelines() -> Dict[str, Pipeline]:
         "simulation": simulation_pipeline,
         "scorecard": scorecard_pipeline,
         "profit": profit_pipeline,
+        "ab_test": ab_test_pipeline,
     }

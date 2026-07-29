@@ -21,6 +21,10 @@ def test_profit_pipeline_io():
         "report_profit_node",
     ]
     by_name = {node.name: node for node in pipeline.nodes}
+    assert list(by_name["score_application_abt_node"].inputs) == [
+        "abt_app_cross",
+        "params:profit",
+    ]
     assert "params:profit" in list(by_name["apply_strategy_node"].inputs)
     assert list(by_name["report_profit_node"].outputs) == [
         "profit_by_loan",
@@ -32,26 +36,33 @@ def test_profit_pipeline_io():
 def test_score_application_abt_node_wraps(monkeypatch):
     captured = {}
 
-    def fake_score(abt, packages, points_tables, calibrations):
+    def fake_load(_cfg):
+        return (
+            {"ins": {"product": "ins"}, "css": {"product": "css"}},
+            {"ins": pd.DataFrame(), "css": pd.DataFrame()},
+            {"ins": {"a": 1.0, "b": -0.01}, "css": {"a": 1.0, "b": -0.01}},
+            {"pr": {"package": {}, "points": pd.DataFrame(), "calib": {}}},
+        )
+
+    def fake_score(abt, packages, points_tables, calibrations, secondary=None):
         captured["packages"] = packages
-        captured["points"] = points_tables
-        captured["calib"] = calibrations
+        captured["secondary"] = secondary
         return pd.DataFrame({"aid": ["a1"], "pd": [0.1]})
 
+    monkeypatch.setattr(
+        "credit_scoring.pipelines.profit.nodes.load_profit_artifacts",
+        fake_load,
+    )
     monkeypatch.setattr(
         "credit_scoring.pipelines.profit.nodes.score_abt_application",
         fake_score,
     )
     out = score_application_abt_node(
         pd.DataFrame(),
-        {"product": "ins"},
-        {"product": "css"},
-        pd.DataFrame(),
-        pd.DataFrame(),
-        {"a": 1.0, "b": -0.01},
-        {"a": 1.0, "b": -0.01},
+        {"artifacts": {"ins": {}, "css": {}, "pr": {}}},
     )
     assert captured["packages"]["ins"]["product"] == "ins"
+    assert "pr" in captured["secondary"]
     assert list(out.columns) == ["aid", "pd"]
 
 
@@ -80,6 +91,14 @@ def test_apply_strategy_node_uses_params(monkeypatch):
 
 
 def test_report_profit_node_summary(monkeypatch):
+    monkeypatch.setattr(
+        "credit_scoring.pipelines.profit.nodes.export_asif_scored",
+        lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "credit_scoring.pipelines.profit.nodes.log_policy_run",
+        lambda **k: None,
+    )
     scored = pd.DataFrame(
         {
             "aid": ["a1"],
@@ -115,4 +134,5 @@ def test_report_profit_node_summary(monkeypatch):
     assert "profit" in by_loan.columns
     assert summary["reference"] == 731882
     assert summary["source"] == "offline"
+    assert summary["best_strategy"] == "CLTV mid-band (production)"
     assert "Offline" in report
