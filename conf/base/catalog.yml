@@ -250,7 +250,3 @@ pd_behavioral_stub:
 monitoring_stub:
   type: pandas.ParquetDataset
   filepath: data/08_reporting/monitoring_stub.parquet
-
-api_readme_stub:
-  type: text.TextDataset
-  filepath: api/README.txt

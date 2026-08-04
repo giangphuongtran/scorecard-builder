@@ -48,17 +48,20 @@ In plain terms, this is a grey-zone approval rule. Instead of treating every bor
 
 ### How policy changes profit
 
+
 | Policy move (example)                    | Business effect                                                                               |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
 | Tighten `pd_ins_high` (e.g. 3% -> 2%)    | Fewer INS approvals; fewer expected defaults; profit usually falls if the band was profitable |
 | Loosen `pd_css` (e.g. 50% -> 55%)        | More CSS volume; higher bad rate risk; profit delta depends on CSS economics                  |
 | Mid-band CLTV (`pr_min`, `cross_pd_max`) | Keep grey-zone INS only when PR and Cross PD pass                                             |
 
+
 Interactive sensitivity and the INS mid-band funnel live in the Streamlit **Profit & CLTV policy** tab.
 
 ## What results we got
 
 These figures come from frozen artifacts saved in the repo.
+
 
 | Metric                     | Value              |
 | -------------------------- | ------------------ |
@@ -68,6 +71,7 @@ These figures come from frozen artifacts saved in the repo.
 | Published benchmark profit | **731,882 PLN**    |
 | Offline delta vs benchmark | **≈ +233,000 PLN** |
 
+
 More detail:
 
 - `ins` validation Gini: **75.5%** from `pd_ins_v6.pkl`
@@ -76,22 +80,6 @@ More detail:
 - selected profit policy: `pd_css=0.50`, `pd_ins_high=0.03`, `pd_ins_low=0.01`, `pr_min=0.028`, `cross_pd_max=0.2724`
 
 The selected policy in `[conf/base/parameters.yml](conf/base/parameters.yml)` is the **CLTV mid-band production** rule. The Streamlit workbench shows it, while cutoff search and trade-off exploration stay in `[src/credit_scoring/profit/](src/credit_scoring/profit/)`.
-
-## Why `965k PLN` is offline replay, not closed-loop re-sim
-
-This distinction matters.
-
-- **As-if / offline replay** means scoring historical applications with frozen models, applying cutoffs, and computing what profit would have been on that fixed frame.
-- **Closed-loop re-simulation** means approvals today change the future portfolio, balances, and later outcomes.
-- **Live performance** means real production outcomes from an operating portfolio.
-
-The **≈ 965,000 PLN** result belongs to the first bucket only. It is computed on a fixed historical application base using frozen model artifacts and frozen cutoffs.
-
-So the current README claim is:
-
-- useful as evidence that the selected policy beats the published benchmark on offline replay,
-- not evidence of live performance,
-- not evidence of a full feedback-aware portfolio simulation.
 
 ## How the scorecard was built
 
@@ -107,14 +95,20 @@ flowchart LR
   logit --> points["Points + calibration"]
 ```
 
+
+
 Final variables, in plain English:
+
 
 | Product  | n   | Variables (plain English)                                                                        |
 | -------- | --- | ------------------------------------------------------------------------------------------------ |
-| INS PD   | 7   | children, marital status, job code, age, INS closed-bad count, income, active INS loans        |
+| INS PD   | 7   | children, marital status, job code, age, INS closed-bad count, income, active INS loans          |
 | CSS PD   | 5   | CSS loan count, CSS utilization, CSS capacity, all-product loan count, min paid INS installments |
-| PR       | 6   | job code, age, income, term, INS history count, all-product capacity                            |
-| Cross PD | 6   | age, all-product capacity / loan count, CSS capacity / due util / max due                       |
+| PR       | 6   | job code, age, income, term, INS history count, all-product capacity                             |
+| Cross PD | 6   | age, all-product capacity / loan count, CSS capacity / due util / max due                        |
+
+
+
 
 ### Why these choices
 
@@ -124,6 +118,8 @@ Final variables, in plain English:
 - **CLTV mid-band policy:** borderline installment cases get an extra cross-sell and cross-risk check instead of a single blunt cutoff.
 - **Constrained cutoff tuning and offline A/B:** policy variants are compared under acceptance-rate and bad-rate constraints.
 - **Stability gates before promotion:** temporal diagnostics help keep unstable drivers out of the frozen scorecard.
+
+
 
 ## What to open in Streamlit
 
@@ -145,11 +141,13 @@ uv run python -m streamlit run apps/scorecard_workbench.py
 
 The workbench reads `data/08_reporting/workbench_bundle/`, `asif_scored_for_tuner.parquet`, and optional `ab_test_summary.json`.
 
+
 | View          | Screenshot                              |
 | ------------- | --------------------------------------- |
 | Landing page  | Streamlit workbench — landing page      |
 | Model quality | Streamlit workbench — model quality tab |
 | Profit policy | Streamlit workbench — profit policy tab |
+
 
 See `[docs/images/README.md](docs/images/README.md)` for capture instructions.
 
@@ -207,8 +205,9 @@ Apps:
 # Streamlit decision report (primary UI)
 uv run python -m streamlit run apps/scorecard_workbench.py
 
-# FastAPI scoring service
+# FastAPI scoring service (requires: uv sync --extra serve)
 uv run python apps/scorecard_api.py
+# equivalent: uv run uvicorn apps.scorecard_api:app --host 127.0.0.1 --port 8000
 
 # Interactive pipeline graph (local)
 uv run kedro viz run
@@ -255,6 +254,8 @@ flowchart LR
     abTest --> mlflowTrack
 ```
 
+
+
 High-level project phases (notebooks + pipelines):
 
 ```mermaid
@@ -270,18 +271,26 @@ flowchart LR
     G --> J[A/B + MLflow]
 ```
 
+
+
+
+
 ## Project phases
 
-| Stage                  | What we built                                                                 | Artifact                       | Links                                                                                                                                                                                                              |
-| ---------------------- | ----------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1 EDA                  | Understand applications, defaults, product mix, and bad-rate patterns         | `notebooks/01_eda_raw.ipynb`   | [notebook](notebooks/01_eda_raw.ipynb)                                                                                                                                                                             |
-| 2 Behavioral           | Rolling payment behavior features over 3/6/9/12 months                        | `behavioral_features` parquet  | [pipeline](src/credit_scoring/pipelines/behavioral/), [notebook](notebooks/02_behavioral_features.ipynb)                                                                                                        |
-| 3 Simulation           | Monthly ABT assembly for realistic portfolio-style evaluation                  | `abt_app`, `decisions`         | [pipeline](src/credit_scoring/pipelines/simulation/)                                                                                                                                                               |
-| 4 Scorecard            | WOE binning, variable selection, logistic PD models, frozen `v6` scorecards   | `pd_*_v6`, points, calibration | [pipeline](src/credit_scoring/pipelines/scorecard/), [ins notebook](notebooks/03_scorecard_ins.ipynb), [css notebook](notebooks/03_scorecard_css.ipynb), [tune notebook](notebooks/05_scorecard_profit_tune.ipynb) |
-| 5 Profit               | P&L engine plus the CLTV mid-band policy on offline as-if replay              | profit summary, as-if frame    | [pipeline](src/credit_scoring/pipelines/profit/), [library](src/credit_scoring/profit/)                                                                                                                          |
-| 5b A/B                 | Offline champion versus challenger cutoff comparison                           | `ab_test_summary.json`         | [pipeline](src/credit_scoring/pipelines/ab_test/)                                                                                                                                                                  |
-| 6 Reporting            | Streamlit dossier for CLTV policy, A/B, build story, model quality, officer tool | workbench bundles           | [app](apps/scorecard_workbench.py)                                                                                                                                                                                 |
-| 7 Serving and tracking | FastAPI scoring API plus MLflow logging                                        | live score endpoint            | [API](apps/scorecard_api.py), [MLflow utils](src/credit_scoring/mlflow_utils.py)                                                                                                                                  |
+
+| Stage                  | What we built                                                                    | Artifact                       | Links                                                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 EDA                  | Understand applications, defaults, product mix, and bad-rate patterns            | `notebooks/01_eda_raw.ipynb`   | [notebook](notebooks/01_eda_raw.ipynb)                                                                                                                                                                             |
+| 2 Behavioral           | Rolling payment behavior features over 3/6/9/12 months                           | `behavioral_features` parquet  | [pipeline](src/credit_scoring/pipelines/behavioral/), [notebook](notebooks/02_behavioral_features.ipynb)                                                                                                           |
+| 3 Simulation           | Monthly ABT assembly for realistic portfolio-style evaluation                    | `abt_app`, `decisions`         | [pipeline](src/credit_scoring/pipelines/simulation/)                                                                                                                                                               |
+| 4 Scorecard            | WOE binning, variable selection, logistic PD models, frozen `v6` scorecards      | `pd_*_v6`, points, calibration | [pipeline](src/credit_scoring/pipelines/scorecard/), [ins notebook](notebooks/03_scorecard_ins.ipynb), [css notebook](notebooks/03_scorecard_css.ipynb), [tune notebook](notebooks/05_scorecard_profit_tune.ipynb) |
+| 5 Profit               | P&L engine plus the CLTV mid-band policy on offline as-if replay                 | profit summary, as-if frame    | [pipeline](src/credit_scoring/pipelines/profit/), [library](src/credit_scoring/profit/)                                                                                                                            |
+| 5b A/B                 | Offline champion versus challenger cutoff comparison                             | `ab_test_summary.json`         | [pipeline](src/credit_scoring/pipelines/ab_test/)                                                                                                                                                                  |
+| 6 Reporting            | Streamlit dossier for CLTV policy, A/B, build story, model quality, officer tool | workbench bundles              | [app](apps/scorecard_workbench.py)                                                                                                                                                                                 |
+| 7 Serving and tracking | FastAPI scoring API plus MLflow logging                                          | live score endpoint            | [API](apps/scorecard_api.py), [MLflow utils](src/credit_scoring/mlflow_utils.py)                                                                                                                                   |
+
+
+
 
 ## Kedro pipelines
 
@@ -306,6 +315,10 @@ flowchart LR
     simNode --> decisions[decisions]
 ```
 
+
+
+
+
 ### Behavioral pipeline (`kedro run --pipeline=behavioral`)
 
 Standalone export of rolling payment features, also embedded inside simulation.
@@ -316,6 +329,10 @@ flowchart LR
     txPq[transactions_parquet] --> behNode
     behNode --> behFeat[behavioral_features]
 ```
+
+
+
+
 
 ### Scorecard pipeline (`kedro run --pipeline=scorecard`)
 
@@ -336,6 +353,10 @@ flowchart LR
     cal --> calParams[calibration_params]
 ```
 
+
+
+
+
 ### Profit pipeline (`kedro run --pipeline=profit`)
 
 Score the labeled application ABT with frozen `v6` PD, PR, and Cross artifacts, apply the CLTV mid-band strategy, report offline P&L, and refresh the as-if frame for Streamlit.
@@ -353,11 +374,16 @@ flowchart LR
     report --> asif[asif_scored_for_tuner]
 ```
 
+
+
+
+
 ### A/B pipeline (`kedro run --pipeline=ab_test`)
 
 Offline champion-versus-challenger comparison on the frozen as-if scored frame, producing `ab_test_summary.json` and MLflow runs.
 
 ## Apps and API
+
 
 | App                 | Role                                                          | Entry point                                                  |
 | ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -365,7 +391,11 @@ Offline champion-versus-challenger comparison on the frozen as-if scored frame, 
 | FastAPI             | HTTP scoring endpoint for application PD and decisions        | `[apps/scorecard_api.py](apps/scorecard_api.py)`             |
 | Kedro Viz           | Interactive DAG of registered pipelines                       | `uv run kedro viz run`                                       |
 
+
+
+
 ## Repository map
+
 
 | Path                                                             | Contents                                          |
 | ---------------------------------------------------------------- | ------------------------------------------------- |
@@ -376,6 +406,7 @@ Offline champion-versus-challenger comparison on the frozen as-if scored frame, 
 | `[apps/](apps/)`                                                 | Streamlit workbench and FastAPI service           |
 | `[conf/base/](conf/base/)`                                       | Kedro catalog, parameters, MLflow, logging        |
 | `[docs/images/](docs/images/)`                                   | README screenshots and Kedro-viz exports          |
+
 
 Extended model notes and glossary live in a private `documents/` folder and are not published with this repo.
 
