@@ -8,9 +8,7 @@ build-backend = "setuptools.build_meta"
 requires-python = ">=3.10"
 name = "credit_scoring"
 readme = "README.md"
-dynamic = [
-    "version",
-]
+version = "0.1"
 dependencies = [
     "ipython>=8.10",
     "jupyterlab>=3.0",
@@ -53,9 +51,6 @@ serve = [
 mlops = [
     "mlflow>=2.12",
 ]
-
-[tool.setuptools.dynamic.version]
-attr = "credit_scoring.__version__"
 
 [tool.setuptools.packages.find]
 where = [
