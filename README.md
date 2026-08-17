@@ -167,7 +167,7 @@ What you can open there:
 uv run python -m streamlit run apps/scorecard_workbench.py
 ```
 
-![Workbench landing](docs/images/streamlit-model-quality.png)
+![Workbench landing](docs/images/streamlit-landing.png)
 
 ## How to run
 
